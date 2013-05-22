@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 value = get_val(xml_entry, field)
                 model_field_name = field.replace('-', '_')
                 max_length = instance._meta.get_field(model_field_name).max_length
-                if max_length:
+                if value and max_length:
                     print "truncating %s to %s characters" % (model_field_name, max_length)
                     value = value[:max_length]
                 setattr(instance, model_field_name, value)
