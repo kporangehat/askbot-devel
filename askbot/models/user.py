@@ -317,7 +317,7 @@ class EmailFeedSetting(models.Model):
             reported_at = "'not yet'"
         else:
             reported_at = '%s' % self.reported_at.strftime('%d/%m/%y %H:%M')
-        return 'Email feed for %s type=%s, frequency=%s, reported_at=%s' % (
+        return u'Email feed for %s type=%s, frequency=%s, reported_at=%s' % (
                                                      self.subscriber,
                                                      self.feed_type,
                                                      self.frequency,
