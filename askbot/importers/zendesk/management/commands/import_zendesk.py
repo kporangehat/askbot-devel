@@ -401,7 +401,7 @@ class Command(BaseCommand):
 
     def import_forum(self, forum_ids):
         thread_count = 0
-        forums = [zendesk_models.Forum.objects.filter(forum_ids__in=forum_ids)]
+        forums = [zendesk_models.Forum.objects.filter(forum_id__in=forum_ids)]
         for forum in forums:
             # don't import private forums, forums restricted to organizations
             # or forums that require login (comment this out if you don't care,
