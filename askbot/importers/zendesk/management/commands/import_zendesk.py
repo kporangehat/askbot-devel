@@ -400,9 +400,9 @@ class Command(BaseCommand):
         return True
 
     def import_forum(self, forum_ids):
-        thread_count = 0
         forums = zendesk_models.Forum.objects.filter(forum_id__in=forum_ids)
         for forum in forums:
+            thread_count = 0
             # don't import private forums, forums restricted to organizations
             # or forums that require login (comment this out if you don't care,
             # or modify the viewable_to_public() method for zendesk_models.Forum)
@@ -415,7 +415,7 @@ class Command(BaseCommand):
                 if self.import_entry(entry):
                     thread_count += 1
                 console.print_action(str(thread_count))
-        console.print_action(str(thread_count), nowipe = True)
+            console.print_action(str(thread_count), nowipe = True)
 
 
     # @transaction.commit_manually
