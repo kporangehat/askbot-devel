@@ -174,7 +174,7 @@ class Command(BaseCommand):
         xml_file = self.tar.extractfile(file_info)
         return etree.parse(xml_file)
 
-    @transaction.commit_manually
+    # @transaction.commit_manually
     def read_xml_file(self,
             file_name = None,
             entry_name = None,
@@ -233,10 +233,10 @@ class Command(BaseCommand):
             entry_name = 'entry',
             model = zendesk_models.Entry,
             fields = (
-                'body', 'created_at', 'tags', 'flag_type_id', 'forum_id',
-                'hits', 'entry_id', 'is_highlighted', 'is_locked', 'is_pinned'
-                'is_public', 'organization_id', 'position', 'posts_count', 
-                'submitter_id', 'title', 'updated_at', 'votes_count'
+                'body', 'created-at', 'tags', 'flag-type-id', 'forum-id',
+                'hits', 'entry-id', 'is-highlighted', 'is-locked', 'is-pinned',
+                'is-public', 'organization-id', 'position', 'posts-count', 
+                'submitter-id', 'title', 'updated-at', 'votes-count'
             ),
             extra_field_mappings = (
                 ('id', 'entry_id'),
