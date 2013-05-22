@@ -177,8 +177,7 @@ class Command(BaseCommand):
             entry_name = None,
             model = None,
             fields = None,
-            extra_field_mappings = None,
-            truncate_fields = {}
+            extra_field_mappings = None
         ):
         """
         * file_name - is name of xml file,
@@ -192,14 +191,12 @@ class Command(BaseCommand):
         xml = self.get_file(file_name)
         items_saved = 0
         for xml_entry in xml.findall(entry_name):
-            print "[%s] %s" % (entry_name, get_val(xml_entry, 'name'))
             instance = model()
             for field in fields:
                 value = get_val(xml_entry, field)
                 model_field_name = field.replace('-', '_')
                 max_length = instance._meta.get_field(model_field_name).max_length
                 if value and max_length:
-                    # print "truncating %s to %s characters" % (model_field_name, max_length)
                     value = value[:max_length]
                 setattr(instance, model_field_name, value)
             if extra_field_mappings:
@@ -256,8 +253,7 @@ class Command(BaseCommand):
                 'visibility-restriction-id',
                 'is-public'
             ),
-            extra_field_mappings = (('id', 'forum_id'),),
-            truncate_fields = {'description': 255, 'name': 255}
+            extra_field_mappings = (('id', 'forum_id'),)
         )
 
     @transaction.commit_manually
