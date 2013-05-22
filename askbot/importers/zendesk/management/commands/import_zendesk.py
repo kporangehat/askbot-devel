@@ -324,7 +324,7 @@ class Command(BaseCommand):
         console.print_action('%d users added' % added_users, nowipe = True)
 
 
-    @transaction.commit_manually
+    # @transaction.commit_manually
     def import_posts(self, question, entry):
         # followup posts on a forum topic
         for post in zendesk_models.Post.objects.filter(
@@ -334,15 +334,15 @@ class Command(BaseCommand):
             answer = post_answer(post, question=question)
             post.ab_id = answer.id
             post.save
-            transaction.commit()
+            # transaction.commit()
 
-    @transaction.commit_manually
+    # @transaction.commit_manually
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
         entry.ab_id = question.id
         entry.save()
-        transaction.commit()
+        # transaction.commit()
         self.import_posts(question, entry)
 
     def import_forum(self, forum_id=None):
