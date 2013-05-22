@@ -324,7 +324,7 @@ class Command(BaseCommand):
         console.print_action('%d users added' % added_users, nowipe = True)
 
 
-    # @transaction.commit_manually
+    @transaction.commit_manually
     def import_posts(self, question, entry):
         # followup posts on a forum topic
         for post in zendesk_models.Post.objects.filter(
@@ -336,9 +336,9 @@ class Command(BaseCommand):
                 continue
             post.ab_id = answer.id
             post.save
-            # transaction.commit()
+            transaction.commit()
 
-    # @transaction.commit_manually
+    @transaction.commit_manually
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
@@ -346,14 +346,25 @@ class Command(BaseCommand):
             return
         entry.ab_id = question.id
         entry.save()
-        # transaction.commit()
+        transaction.commit()
         self.import_posts(question, entry)
+        console.print_action(question.title)
         return True
 
     def import_forum(self, forum_id=None):
         thread_count = 0
         if forum_id:
-            for entry in zendesk_models.Entry.objects.filter(forum_id=forum_id):
+            forums = [zendesk_models.Forum.objects.filter(forum_id=forum_id)
+        else:
+            forums = zendesk_models.Entry.objects.all()
+        for forum in forums:
+            # don't import private forums (comment this out if you don't care)
+            if not forum.is_public:
+                console.print_action("skipping private forum \"%s\"" % forum.name, 
+                                     nowipe = True)
+                continue
+            console.print_action("Forum: %s" % forum.name, nowipe = True)
+            for entry in zendesk_models.Entry.objects.filter(forum_id=forum.forum_id):
                 if self.import_entry(entry):
                     thread_count += 1
                 console.print_action(str(thread_count))
