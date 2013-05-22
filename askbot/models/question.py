@@ -1450,7 +1450,7 @@ class FavoriteQuestion(models.Model):
         app_label = 'askbot'
         db_table = u'favorite_question'
     def __unicode__(self):
-        return '[%s] favorited at %s' %(self.user, self.added_at)
+        return u'[%s] favorited at %s' %(self.user, self.added_at)
 
 
 class DraftQuestion(models.Model):
