@@ -149,17 +149,17 @@ class Command(BaseCommand):
 
         self.tar = tarfile.open(args[0], 'r:gz')
 
-        #sys.stdout.write('Reading users.xml: ')
-        #self.read_users()
+        # sys.stdout.write('Reading users.xml: ')
+        # self.read_users()
         #sys.stdout.write('Reading posts.xml: ')
         #self.read_posts()
-        #sys.stdout.write('Reading forums.xml: ')
-        #self.read_forums()
+        sys.stdout.write('Reading forums.xml: ')
+        self.read_forums()
 
-        sys.stdout.write("Importing user accounts: ")
-        self.import_users()
-        sys.stdout.write("Loading threads: ")
-        self.import_content()
+        # sys.stdout.write("Importing user accounts: ")
+        # self.import_users()
+        # sys.stdout.write("Loading threads: ")
+        # self.import_content()
 
     def get_file(self, file_name):
         first_item = self.tar.getnames()[0]
@@ -177,7 +177,8 @@ class Command(BaseCommand):
             entry_name = None,
             model = None,
             fields = None,
-            extra_field_mappings = None
+            extra_field_mappings = None,
+            truncate_fields = {}
         ):
         """
         * file_name - is name of xml file,
@@ -187,14 +188,19 @@ class Command(BaseCommand):
                    by simple substitiution of '-' with '_'
         * extra field mappings - list of two tuples where xml field names are
           translated to model fields in a special way
+        * truncate_fields - dict of fields that have maxlength in database in
+                   the format {'fieldname': max_length} eg. {'name': 255}
         """
         xml = self.get_file(file_name)
         items_saved = 0
         for xml_entry in xml.findall(entry_name):
+            print "[%s] %s" % (entry_name, get_val(xml_entry, 'name'))
             instance = model()
             for field in fields:
                 value = get_val(xml_entry, field)
                 model_field_name = field.replace('-', '_')
+                if model_field_name in truncate_fields:
+                    value = value[:truncate_fields[model_field_name]]
                 setattr(instance, model_field_name, value)
             if extra_field_mappings:
                 for (field, model_field_name) in extra_field_mappings:
@@ -250,7 +256,8 @@ class Command(BaseCommand):
                 'visibility-restriction-id',
                 'is-public'
             ),
-            extra_field_mappings = (('id', 'forum_id'),)
+            extra_field_mappings = (('id', 'forum_id'),),
+            truncate_fields = {'description': 255, 'name': 255}
         )
 
     @transaction.commit_manually
