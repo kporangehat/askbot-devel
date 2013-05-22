@@ -6,7 +6,57 @@ from askbot.utils.html import unescape
 
 TAGS = {}#internal cache for mappings forum id -> forum name
 
+class Entry(models.Model):
+    """
+    Top level topic posts in a forum
+    """
+    body = models.TextField()
+    created_at = models.DateTimeField()
+    tags = models.CharField(max_length = 255)
+    flag_type_id = models.IntegerField() # topic type
+    forum_id = models.IntegerField() # forum entry is in
+    hits = models.IntegerField() # number of views
+    entry_id = models.IntegerField()
+    is_highlighted = models.BooleanField(default = False) # ignored
+    is_locked = models.BooleanField(default = False) # close
+    is_pinned = models.BooleanField(default = False) # ignored
+    is_public = models.BooleanField(default = True)
+    organization_id = models.IntegerField()
+    position = models.IntegerField() # ignored
+    posts_count = models.IntegerField()
+    submitter_id = models.IntegerField()
+    title = models.CharField(max_length = 300)
+    updated_at = models.DateTimeField()
+    votes_count = models.IntegerField()
+    ab_id = models.IntegerField()
+
+    def get_author(self):
+        """returns author of the post, from the Django user table"""
+        zendesk_user = User.objects.get(user_id = self.submitter_id)
+        return DjangoUser.objects.get(id = zendesk_user.askbot_user_id)
+
+    def get_body_text(self):
+        """unescapes html entities in the body text,
+        saves in the internal cache and returns the value"""
+        if not hasattr(self, '_body_text'):
+            self._body_text = unescape(self.body)
+        return self._body_text
+
+    def get_tag_names(self):
+        """return tags on entry as well as forum title as a tag"""
+        if self.forum_id not in TAGS:
+            forum = Forum.objects.get(forum_id = self.forum_id)
+            tag_name = re.sub(r'\s+', '-', forum.name.lower())
+            TAGS[self.forum_id] = tag_name
+        tags = TAGS[self.forum_id]
+        if self.tags:
+            tags += " %s" % self.tags
+        return tags
+
 class Post(models.Model):
+    """
+    comments on an Entry in a Forum
+    """
     body = models.TextField()
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -15,7 +65,7 @@ class Post(models.Model):
     forum_id = models.IntegerField()
     user_id = models.IntegerField()
     is_informative = models.BooleanField()
-    is_processed = models.BooleanField(default = False)
+    ab_id = models.IntegerField()
 
     def get_author(self):
         """returns author of the post, from the Django user table"""
@@ -28,20 +78,6 @@ class Post(models.Model):
         if not hasattr(self, '_body_text'):
             self._body_text = unescape(self.body)
         return self._body_text
-
-    def get_fake_title(self):
-        """extract first 10 words from the body text and strip tags"""
-        words = re.split(r'\s+', self.get_body_text())
-        if len(words) > 10:
-            words = words[:10]
-        return strip_tags(' '.join(words))
-
-    def get_tag_name(self):
-        if self.forum_id not in TAGS:
-            forum = Forum.objects.get(forum_id = self.forum_id)
-            tag_name = re.sub(r'\s+', '-', forum.name.lower())
-            TAGS[self.forum_id] = tag_name
-        return TAGS[self.forum_id]
 
 class User(models.Model):
     user_id = models.IntegerField()

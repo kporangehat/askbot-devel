@@ -78,22 +78,23 @@ def create_askbot_user(zd_user):
     ab_user.save()
     return ab_user
 
-def post_question(zendesk_post):
-    """posts question to askbot, using zendesk post item"""
+def post_question(zendesk_entry):
+    """posts question to askbot, using zendesk entry"""
     try:
-        return zendesk_post.get_author().post_question(
-            title = zendesk_post.get_fake_title(),
-            body_text = zendesk_post.get_body_text(),
-            tags = zendesk_post.get_tag_name(),
-            timestamp = zendesk_post.created_at
+        return zendesk_entry.get_author().post_question(
+            title = zendesk_entry.title,
+            body_text = zendesk_entry.get_body_text(),
+            tags = zendesk_entry.get_tag_names(),
+            timestamp = zendesk_entry.created_at
         )
     except Exception, e:
         msg = unicode(e)
-        print "Warning: post %d dropped: %s" % (zendesk_post.post_id, msg)
+        print "Warning: entry %d dropped: %s" % (zendesk_entry.entry_id, msg)
 
 def post_answer(zendesk_post, question = None):
+    """posts answer to askbot, using zendesk post"""
     try:
-        zendesk_post.get_author().post_answer(
+        return zendesk_post.get_author().post_answer(
             question = question,
             body_text = zendesk_post.get_body_text(),
             timestamp = zendesk_post.created_at
@@ -151,15 +152,17 @@ class Command(BaseCommand):
 
         sys.stdout.write('Reading users.xml: ')
         self.read_users()
-        sys.stdout.write('Reading posts.xml: ')
-        self.read_posts()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
+        sys.stdout.write('Reading entries.xml: ')
+        self.read_entries()
+        sys.stdout.write('Reading posts.xml: ')
+        self.read_posts()
 
         sys.stdout.write("Importing user accounts: ")
         self.import_users()
         sys.stdout.write("Loading threads: ")
-        self.import_content()
+        self.import_forum()
 
     def get_file(self, file_name):
         first_item = self.tar.getnames()[0]
@@ -222,6 +225,22 @@ class Command(BaseCommand):
                 'email', 'is-verified', 'photo-url'
             ),
             extra_field_mappings = (('id', 'user_id'),)
+        )
+
+    def read_entries(self):
+        self.read_xml_file(
+            file_name = 'entries.xml',
+            entry_name = 'entry',
+            model = zendesk_models.Entry,
+            fields = (
+                'body', 'created_at', 'tags', 'flag_type_id', 'forum_id',
+                'hits', 'entry_id', 'is_highlighted', 'is_locked', 'is_pinned'
+                'is_public', 'organization_id', 'position', 'posts_count', 
+                'submitter_id', 'title', 'updated_at', 'votes_count'
+            ),
+            extra_field_mappings = (
+                ('id', 'entry_id'),
+            )
         )
 
     def read_posts(self):
@@ -304,29 +323,68 @@ class Command(BaseCommand):
             transaction.commit()
         console.print_action('%d users added' % added_users, nowipe = True)
 
+
     @transaction.commit_manually
-    def import_content(self):
-        thread_ids = zendesk_models.Post.objects.values_list(
-                                                        'entry_id',
-                                                        flat = True
-                                                    ).distinct()
-        threads_posted = 0
-        for thread_id in thread_ids:
-            thread_entries = zendesk_models.Post.objects.filter(
-                entry_id = thread_id
-            ).order_by('created_at')
-            question_post = thread_entries[0]
-            question = post_question(question_post)
-            question_post.is_processed = True
-            question_post.save()
+    def import_posts(self, question, entry):
+        # followup posts on a forum topic
+        for post in zendesk_models.Post.objects.filter(
+                        entry_id=entry.entry_id
+                        ).order_by('created_at'):
+            # create answers
+            answer = post_answer(post, question=question)
+            post.ab_id = answer.id
+            post.save
             transaction.commit()
-            entry_count = thread_entries.count()
-            threads_posted += 1
-            console.print_action(str(threads_posted))
-            if entry_count > 1:
-                for answer_post in thread_entries[1:]:
-                    post_answer(answer_post, question = question)
-                    answer_post.is_processed = True
-                    answer_post.save()
-                    transaction.commit()
-        console.print_action(str(threads_posted), nowipe = True)
+
+    @transaction.commit_manually
+    def import_entry(self, entry):
+        # top-level forum topics
+        question = post_question(entry)
+        entry.ab_id = question.id
+        entry.save()
+        transaction.commit()
+        self.import_posts(question, entry)
+
+    def import_forum(self, forum_id=None):
+        thread_count = 0
+        if forum_id:
+            for entry in zendesk_models.Entry.objects.filter(forum_id=forum_id):
+                self.import_entry(entry)
+                thread_count += 1
+                console.print_action(str(thread_count))
+        else:
+            for entry in zendesk_models.Entry.objects.all():
+                self.import_entry(entry)
+                thread_count += 1
+                console.print_action(str(thread_count))
+        console.print_action(str(thread_count), nowipe = True)
+
+
+    # @transaction.commit_manually
+    # def import_content(self):
+    #     #[1, 3, 4]
+    #     thread_ids = zendesk_models.Post.objects.values_list(
+    #                                                     'entry_id',
+    #                                                     flat = True
+    #                                                 ).distinct()
+    #     threads_posted = 0
+    #     for thread_id in thread_ids:
+    #         # [<Post #1>, <Post #3>, <Post #4]
+    #         thread_entries = zendesk_models.Post.objects.filter(
+    #             entry_id = thread_id
+    #         ).order_by('created_at')
+    #         question_post = thread_entries[0]
+    #         question = post_question(question_post)
+    #         question_post.is_processed = True
+    #         question_post.save()
+    #         transaction.commit()
+    #         entry_count = thread_entries.count()
+    #         threads_posted += 1
+    #         console.print_action(str(threads_posted))
+    #         if entry_count > 1:
+    #             for answer_post in thread_entries[1:]:
+    #                 post_answer(answer_post, question = question)
+    #                 answer_post.is_processed = True
+    #                 answer_post.save()
+    #                 transaction.commit()
+    #     console.print_action(str(threads_posted), nowipe = True)
