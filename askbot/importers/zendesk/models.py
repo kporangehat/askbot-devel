@@ -65,7 +65,7 @@ class Post(models.Model):
     forum_id = models.IntegerField()
     user_id = models.IntegerField()
     is_informative = models.BooleanField()
-    ab_id = models.IntegerField()
+    ab_id = models.IntegerField(null = True)
 
     def get_author(self):
         """returns author of the post, from the Django user table"""
