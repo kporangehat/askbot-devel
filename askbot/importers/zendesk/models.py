@@ -150,7 +150,7 @@ class Ticket(models.Model):
 class Comment(models.Model):
     """todo: attachments and custom fields"""
     author_id = models.IntegerField()
-    created_at type="datetime">2009_04_03T16:15:27+01:00</created_at>
+    created_at = models.DateTimeField()
     is_public = models.BooleanField(default = True)
     type = models.CharField(max_length = 255)
     value = models.CharField()
