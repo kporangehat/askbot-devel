@@ -188,8 +188,6 @@ class Command(BaseCommand):
                    by simple substitiution of '-' with '_'
         * extra field mappings - list of two tuples where xml field names are
           translated to model fields in a special way
-        * truncate_fields - dict of fields that have maxlength in database in
-                   the format {'fieldname': max_length} eg. {'name': 255}
         """
         xml = self.get_file(file_name)
         items_saved = 0
@@ -199,8 +197,10 @@ class Command(BaseCommand):
             for field in fields:
                 value = get_val(xml_entry, field)
                 model_field_name = field.replace('-', '_')
-                if model_field_name in truncate_fields:
-                    value = value[:truncate_fields[model_field_name]]
+                max_length = instance._meta.get_field(model_field_name).max_length
+                if max_length:
+                    print "truncating %s to %s characters" % (model_field_name, max_length)
+                    value = value[:max_length]
                 setattr(instance, model_field_name, value)
             if extra_field_mappings:
                 for (field, model_field_name) in extra_field_mappings:
