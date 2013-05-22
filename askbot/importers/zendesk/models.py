@@ -21,7 +21,7 @@ class Entry(models.Model):
     is_locked = models.BooleanField(default = False) # close
     is_pinned = models.BooleanField(default = False) # ignored
     is_public = models.BooleanField(default = True)
-    organization_id = models.IntegerField()
+    organization_id = models.IntegerField(null = True)
     position = models.IntegerField(null = True) # ignored
     posts_count = models.IntegerField(null = True)
     submitter_id = models.IntegerField()
