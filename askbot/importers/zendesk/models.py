@@ -113,6 +113,23 @@ class Forum(models.Model):
     visibility_restriction_id = models.IntegerField()
     is_public = models.BooleanField()
 
+    def is_public(self):
+        """There are two ways to restrict visibility of the forum. If is_public
+        is False, then it's not public, duh. But for 
+        visibility_restriction_id:
+            1=viewable to everyone
+            2=viewable to logged in users only
+            3=viewable to logged in agents only
+        organization_id:
+            if not null, this forum is restricted to a specific organization
+            on top of other restrictions
+        """
+        if (not self.is_public or self.visibility_restriction_id != 1 or 
+            self.organization_id):
+            return False
+        else:
+            return True
+
 class Ticket(models.Model):
     assigned_at = models.DateTimeField()
     assignee_id = models.IntegerField()
