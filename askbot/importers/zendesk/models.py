@@ -15,7 +15,7 @@ class Entry(models.Model):
     tags = models.CharField(max_length = 255, null = True)
     flag_type_id = models.IntegerField() # topic type
     forum_id = models.IntegerField() # forum entry is in
-    hits = models.IntegerField(default = 0) # number of views
+    hits = models.IntegerField(null = True) # number of views
     entry_id = models.IntegerField()
     is_highlighted = models.BooleanField(default = False) # ignored
     is_locked = models.BooleanField(default = False) # close
@@ -23,11 +23,11 @@ class Entry(models.Model):
     is_public = models.BooleanField(default = True)
     organization_id = models.IntegerField()
     position = models.IntegerField() # ignored
-    posts_count = models.IntegerField(default = 0)
+    posts_count = models.IntegerField(null = True)
     submitter_id = models.IntegerField()
     title = models.CharField(max_length = 300)
     updated_at = models.DateTimeField()
-    votes_count = models.IntegerField(default = 0)
+    votes_count = models.IntegerField(null = True, default = 0)
     ab_id = models.IntegerField(null = True)
 
     def get_author(self):
