@@ -150,8 +150,8 @@ class Command(BaseCommand):
 
         self.tar = tarfile.open(args[0], 'r:gz')
 
-        sys.stdout.write('Reading users.xml: ')
-        self.read_users()
+        # sys.stdout.write('Reading users.xml: ')
+        # self.read_users()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
         sys.stdout.write('Reading entries.xml: ')
@@ -162,10 +162,18 @@ class Command(BaseCommand):
         # self.read_tickets()
 
 
-        sys.stdout.write("Importing user accounts: ")
-        self.import_users()
-        sys.stdout.write("Loading threads: ")
-        self.import_forum()
+        # sys.stdout.write("Importing user accounts: ")
+        # self.import_users()
+        
+        forum_ids = []
+        for forum in zendesk_models.Forum.objects.all():
+            if not forum.is_public():
+                console.print_action("skipping non-public forum \"%s\"" % forum.name, nowipe=True)
+                continue
+            if console.get_yes_or_no("Import forum %s?" % forum.name) == 'yes':
+                forum_ids.append(forum.forum_id)
+        sys.stdout.write("Loading forum threads: ")
+        self.import_forum(forum_ids=forum_ids)
 
     def get_file(self, file_name):
         first_item = self.tar.getnames()[0]
@@ -177,7 +185,7 @@ class Command(BaseCommand):
         xml_file = self.tar.extractfile(file_info)
         return etree.parse(xml_file)
 
-    # @transaction.commit_manually
+    @transaction.commit_manually
     def read_xml_file(self,
             file_name = None,
             entry_name = None,
@@ -227,7 +235,7 @@ class Command(BaseCommand):
             #             sub_instance = model()
                         
             instance.save()
-            # transaction.commit()
+            transaction.commit()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
@@ -364,7 +372,7 @@ class Command(BaseCommand):
         console.print_action('%d users added' % added_users, nowipe = True)
 
 
-    # @transaction.commit_manually
+    @transaction.commit_manually
     def import_posts(self, question, entry):
         # followup posts on a forum topic
         for post in zendesk_models.Post.objects.filter(
@@ -376,9 +384,9 @@ class Command(BaseCommand):
                 continue
             post.ab_id = answer.id
             post.save
-            # transaction.commit()
+            transaction.commit()
 
-    # @transaction.commit_manually
+    @transaction.commit_manually
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
@@ -386,30 +394,24 @@ class Command(BaseCommand):
             return
         entry.ab_id = question.id
         entry.save()
-        # transaction.commit()
+        transaction.commit()
         self.import_posts(question, entry)
         #console.print_action(question.title)
         return True
 
-    def import_forum(self, forum_id=None):
+    def import_forum(self, forum_ids):
         thread_count = 0
-        if forum_id:
-            forums = [zendesk_models.Forum.objects.filter(forum_id=forum_id)]
-        else:
-            forums = zendesk_models.Forum.objects.all()
+        forums = [zendesk_models.Forum.objects.filter(forum_ids__in=forum_ids)]
         for forum in forums:
-            # don't import private forums (comment this out if you don't care)
-            if not forum.is_public:
+            # don't import private forums, forums restricted to organizations
+            # or forums that require login (comment this out if you don't care,
+            # or modify the is_public() method for zendesk_models.Forum)
+            if not forum.is_public():
                 console.print_action("skipping private forum \"%s\"" % forum.name, 
                                      nowipe = True)
                 continue
-            console.print_action("Forum: %s" % forum.name, nowipe = True)
+            sys.stdout.write("Forum: %s... " % forum.name)
             for entry in zendesk_models.Entry.objects.filter(forum_id=forum.forum_id):
-                if self.import_entry(entry):
-                    thread_count += 1
-                console.print_action(str(thread_count))
-        else:
-            for entry in zendesk_models.Entry.objects.all():
                 if self.import_entry(entry):
                     thread_count += 1
                 console.print_action(str(thread_count))
