@@ -167,7 +167,7 @@ class Command(BaseCommand):
         
         forum_ids = []
         for forum in zendesk_models.Forum.objects.all():
-            if not forum.is_public():
+            if not forum.viewable_to_public():
                 console.print_action("skipping non-public forum \"%s\"" % forum.name, nowipe=True)
                 continue
             if console.get_yes_or_no("Import forum %s?" % forum.name) == 'yes':
@@ -405,8 +405,8 @@ class Command(BaseCommand):
         for forum in forums:
             # don't import private forums, forums restricted to organizations
             # or forums that require login (comment this out if you don't care,
-            # or modify the is_public() method for zendesk_models.Forum)
-            if not forum.is_public():
+            # or modify the viewable_to_public() method for zendesk_models.Forum)
+            if not forum.viewable_to_public():
                 console.print_action("skipping private forum \"%s\"" % forum.name, 
                                      nowipe = True)
                 continue

@@ -113,7 +113,7 @@ class Forum(models.Model):
     visibility_restriction_id = models.IntegerField()
     is_public = models.BooleanField()
 
-    def is_public(self):
+    def viewable_to_public(self):
         """There are two ways to restrict visibility of the forum. If is_public
         is False, then it's not public, duh. But for 
         visibility_restriction_id:
