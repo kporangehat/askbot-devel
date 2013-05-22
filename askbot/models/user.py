@@ -312,7 +312,7 @@ class EmailFeedSetting(models.Model):
         app_label = 'askbot'
 
 
-    def __str__(self):
+    def __unicode__(self):
         if self.reported_at is None:
             reported_at = "'not yet'"
         else:
