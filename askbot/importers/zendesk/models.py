@@ -22,7 +22,7 @@ class Entry(models.Model):
     is_pinned = models.BooleanField(default = False) # ignored
     is_public = models.BooleanField(default = True)
     organization_id = models.IntegerField()
-    position = models.IntegerField() # ignored
+    position = models.IntegerField(null = True) # ignored
     posts_count = models.IntegerField(null = True)
     submitter_id = models.IntegerField()
     title = models.CharField(max_length = 300)
