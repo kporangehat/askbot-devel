@@ -170,7 +170,7 @@ class Command(BaseCommand):
             if not forum.viewable_to_public():
                 console.print_action("skipping non-public forum \"%s\"" % forum.name, nowipe=True)
                 continue
-            if console.get_yes_or_no("Import forum %s?" % forum.name) == 'yes':
+            if console.get_yes_or_no("Import forum \"%s\" ?" % forum.name) == 'yes':
                 forum_ids.append(forum.forum_id)
         sys.stdout.write("Loading forum threads: ")
         self.import_forum(forum_ids=forum_ids)
