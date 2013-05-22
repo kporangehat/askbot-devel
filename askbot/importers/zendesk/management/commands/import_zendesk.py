@@ -149,17 +149,17 @@ class Command(BaseCommand):
 
         self.tar = tarfile.open(args[0], 'r:gz')
 
-        # sys.stdout.write('Reading users.xml: ')
-        # self.read_users()
-        #sys.stdout.write('Reading posts.xml: ')
-        #self.read_posts()
+        sys.stdout.write('Reading users.xml: ')
+        self.read_users()
+        sys.stdout.write('Reading posts.xml: ')
+        self.read_posts()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
 
-        # sys.stdout.write("Importing user accounts: ")
-        # self.import_users()
-        # sys.stdout.write("Loading threads: ")
-        # self.import_content()
+        sys.stdout.write("Importing user accounts: ")
+        self.import_users()
+        sys.stdout.write("Loading threads: ")
+        self.import_content()
 
     def get_file(self, file_name):
         first_item = self.tar.getnames()[0]
@@ -171,7 +171,7 @@ class Command(BaseCommand):
         xml_file = self.tar.extractfile(file_info)
         return etree.parse(xml_file)
 
-    #@transaction.commit_manually
+    @transaction.commit_manually
     def read_xml_file(self,
             file_name = None,
             entry_name = None,
@@ -199,7 +199,7 @@ class Command(BaseCommand):
                 model_field_name = field.replace('-', '_')
                 max_length = instance._meta.get_field(model_field_name).max_length
                 if value and max_length:
-                    print "truncating %s to %s characters" % (model_field_name, max_length)
+                    # print "truncating %s to %s characters" % (model_field_name, max_length)
                     value = value[:max_length]
                 setattr(instance, model_field_name, value)
             if extra_field_mappings:
@@ -207,7 +207,7 @@ class Command(BaseCommand):
                     value = get_val(xml_entry, field)
                     setattr(instance, model_field_name, value)
             instance.save()
-            #transaction.commit()
+            transaction.commit()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
