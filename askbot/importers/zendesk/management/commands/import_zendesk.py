@@ -158,6 +158,9 @@ class Command(BaseCommand):
         self.read_entries()
         sys.stdout.write('Reading posts.xml: ')
         self.read_posts()
+        # sys.stdout.write('Reading tickets.xml: ')
+        # self.read_tickets()
+
 
         sys.stdout.write("Importing user accounts: ")
         self.import_users()
@@ -180,7 +183,8 @@ class Command(BaseCommand):
             entry_name = None,
             model = None,
             fields = None,
-            extra_field_mappings = None
+            extra_field_mappings = None,
+            sub_entities = None
         ):
         """
         * file_name - is name of xml file,
@@ -190,6 +194,16 @@ class Command(BaseCommand):
                    by simple substitiution of '-' with '_'
         * extra field mappings - list of two tuples where xml field names are
           translated to model fields in a special way
+        * sub_entities - list of fields that should be treated as separate
+                    models (like Ticket.comments)
+                    [{'comments': (
+                        'comment', 
+                        zendesk_models.Comment, 
+                        ['author-id', 'created-at', 'is-public', 'type', 
+                            'value', 'via-id', 'ticket-id'], 
+                        None, 
+                        None)
+                    }]
         """
         xml = self.get_file(file_name)
         items_saved = 0
@@ -206,8 +220,14 @@ class Command(BaseCommand):
                 for (field, model_field_name) in extra_field_mappings:
                     value = get_val(xml_entry, field)
                     setattr(instance, model_field_name, value)
+            # if sub_entities:
+            #     for sub_entity in sub_entities:
+            #         for sub_field_name, sub_def in sub_entity:
+            #             sub_entry_name, sub_model, sub_fields, sub_extra_field_mappings = sub_def
+            #             sub_instance = model()
+                        
             instance.save()
-            transaction.commit()
+            # transaction.commit()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
@@ -275,6 +295,26 @@ class Command(BaseCommand):
             extra_field_mappings = (('id', 'forum_id'),)
         )
 
+    def read_tickets(self):
+        """todo: add comments"""
+        self.read_xml_file(
+            file_name = 'tickets.xml',
+            entry_name = 'ticket',
+            model = zendesk_models.Ticket,
+            fields = (
+                'assigned-at', 'assignee-id', 'base-score', 'created-at', 
+                'current-collaborators','current-tags','description', 
+                'due-date', 'entry-id', 'external-id', 'group-id', 
+                'initially-assigned-at', 'latest-recipients', 'nice-id', 
+                'organization-id', 'original-recipient-address', 'priority-id', 
+                'recipient', 'requester-id', 'resolution-time', 'solved-at', 
+                'status-id', 'status-updated-at', 'subject', 'submitter-id', 
+                'ticket-type-id', 'updated-at', 'updated-by-type-id', 'via-id', 
+                'score', 'problem-id', 'has-incidents'
+            ),
+            extra_field_mappings = (('nice-id', 'ticket_id'),)
+        )
+
     @transaction.commit_manually
     def import_users(self):
         added_users = 0
@@ -324,7 +364,7 @@ class Command(BaseCommand):
         console.print_action('%d users added' % added_users, nowipe = True)
 
 
-    @transaction.commit_manually
+    # @transaction.commit_manually
     def import_posts(self, question, entry):
         # followup posts on a forum topic
         for post in zendesk_models.Post.objects.filter(
@@ -336,9 +376,9 @@ class Command(BaseCommand):
                 continue
             post.ab_id = answer.id
             post.save
-            transaction.commit()
+            # transaction.commit()
 
-    @transaction.commit_manually
+    # @transaction.commit_manually
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
@@ -346,17 +386,17 @@ class Command(BaseCommand):
             return
         entry.ab_id = question.id
         entry.save()
-        transaction.commit()
+        # transaction.commit()
         self.import_posts(question, entry)
-        console.print_action(question.title)
+        #console.print_action(question.title)
         return True
 
     def import_forum(self, forum_id=None):
         thread_count = 0
         if forum_id:
-            forums = [zendesk_models.Forum.objects.filter(forum_id=forum_id)
+            forums = [zendesk_models.Forum.objects.filter(forum_id=forum_id)]
         else:
-            forums = zendesk_models.Entry.objects.all()
+            forums = zendesk_models.Forum.objects.all()
         for forum in forums:
             # don't import private forums (comment this out if you don't care)
             if not forum.is_public:
