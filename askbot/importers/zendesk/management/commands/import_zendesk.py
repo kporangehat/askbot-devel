@@ -332,6 +332,8 @@ class Command(BaseCommand):
                         ).order_by('created_at'):
             # create answers
             answer = post_answer(post, question=question)
+            if not answer:
+                continue
             post.ab_id = answer.id
             post.save
             # transaction.commit()
@@ -340,22 +342,25 @@ class Command(BaseCommand):
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
+        if not question:
+            return
         entry.ab_id = question.id
         entry.save()
         # transaction.commit()
         self.import_posts(question, entry)
+        return True
 
     def import_forum(self, forum_id=None):
         thread_count = 0
         if forum_id:
             for entry in zendesk_models.Entry.objects.filter(forum_id=forum_id):
-                self.import_entry(entry)
-                thread_count += 1
+                if self.import_entry(entry):
+                    thread_count += 1
                 console.print_action(str(thread_count))
         else:
             for entry in zendesk_models.Entry.objects.all():
-                self.import_entry(entry)
-                thread_count += 1
+                if self.import_entry(entry):
+                    thread_count += 1
                 console.print_action(str(thread_count))
         console.print_action(str(thread_count), nowipe = True)
 
