@@ -171,7 +171,7 @@ class Command(BaseCommand):
         xml_file = self.tar.extractfile(file_info)
         return etree.parse(xml_file)
 
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def read_xml_file(self,
             file_name = None,
             entry_name = None,
@@ -207,7 +207,7 @@ class Command(BaseCommand):
                     value = get_val(xml_entry, field)
                     setattr(instance, model_field_name, value)
             instance.save()
-            transaction.commit()
+            #transaction.commit()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
