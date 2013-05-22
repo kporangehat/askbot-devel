@@ -150,8 +150,8 @@ class Command(BaseCommand):
 
         self.tar = tarfile.open(args[0], 'r:gz')
 
-        # sys.stdout.write('Reading users.xml: ')
-        # self.read_users()
+        sys.stdout.write('Reading users.xml: ')
+        self.read_users()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
         sys.stdout.write('Reading entries.xml: ')
@@ -159,8 +159,8 @@ class Command(BaseCommand):
         sys.stdout.write('Reading posts.xml: ')
         self.read_posts()
 
-        # sys.stdout.write("Importing user accounts: ")
-        # self.import_users()
+        sys.stdout.write("Importing user accounts: ")
+        self.import_users()
         sys.stdout.write("Loading threads: ")
         self.import_forum()
 
