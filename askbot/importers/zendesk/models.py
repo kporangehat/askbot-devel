@@ -4,7 +4,7 @@ from django.contrib.auth.models import User as DjangoUser
 from django.utils.html import strip_tags
 from askbot.utils.html import unescape
 
-TAGS = {}#internal cache for mappings forum id -> forum name
+TAGS = {}#internal cache for mappings forum id _> forum name
 
 class Entry(models.Model):
     """
@@ -46,7 +46,7 @@ class Entry(models.Model):
         """return tags on entry as well as forum title as a tag"""
         if self.forum_id not in TAGS:
             forum = Forum.objects.get(forum_id = self.forum_id)
-            tag_name = re.sub(r'\s+', '-', forum.name.lower())
+            tag_name = re.sub(r'\s+', '_', forum.name.lower())
             TAGS[self.forum_id] = tag_name
         tags = TAGS[self.forum_id]
         if self.tags:
@@ -112,3 +112,47 @@ class Forum(models.Model):
     use_for_suggestions = models.BooleanField()
     visibility_restriction_id = models.IntegerField()
     is_public = models.BooleanField()
+
+class Ticket(models.Model):
+    assigned_at = models.DateTimeField()
+    assignee_id = models.IntegerField()
+    base_score = models.IntegerField()
+    created_at = models.DateTimeField()
+    current_collaborators nil="true"></current_collaborators>
+    current_tags nil="true"></current_tags>
+    description = models.CharField()
+    due_date = models.DateTimeField()
+    entry_id = models.IntegerField(null = True)
+    external_id = models.IntegerField(null = True)
+    group_id = models.IntegerField(null = True)
+    initially_assigned_at = models.DateTimeField()
+    latest_recipients = models.CharField(null = True)
+    nice_id = models.IntegerField()
+    organization_id = models.IntegerField(null = True)
+    original_recipient_address = models.CharField(max_length = 255, null = True)
+    priority_id = models.IntegerField()
+    recipient = models.CharField(max_length = 255)
+    requester_id = models.IntegerField()
+    resolution_time = models.IntegerField(null = True)
+    solved_at = models.DateTimeField()
+    status_id = models.IntegerField()
+    status_updated_at = models.DateTimeField()
+    subject = models.CharField(max_length = 255)
+    submitter_id = models.IntegerField()
+    ticket_type_id = models.IntegerField()
+    updated_at = models.DateTimeField()
+    updated_by_type_id = models.IntegerField(null = True)
+    via_id = models.IntegerField()
+    score = models.IntegerField()
+    problem_id = models.IntegerField(null = True)
+    has_incidents = models.BooleanField(default = False)
+
+class Comment(models.Model):
+    """todo: attachments and custom fields"""
+    author_id = models.IntegerField()
+    created_at type="datetime">2009_04_03T16:15:27+01:00</created_at>
+    is_public = models.BooleanField(default = True)
+    type = models.CharField(max_length = 255)
+    value = models.CharField()
+    via_id = models.IntegerField()
+ 
