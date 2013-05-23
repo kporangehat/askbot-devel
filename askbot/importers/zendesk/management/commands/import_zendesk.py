@@ -24,6 +24,8 @@ from askbot.importers.zendesk import models as zendesk_models
 
 #a hack, did not know how to parse timezone offset
 ZERO_TIME = datetime.strptime('00:00', '%H:%M')
+# load admin user for user where needed (eg. user who closed thread)
+ADMIN_USER = askbot_models.User.objects.get(id=1)
 
 def get_unique_username(name_seed):
     """returns unique user name, by modifying the
@@ -40,32 +42,35 @@ def get_unique_username(name_seed):
         except askbot_models.User.DoesNotExist:
             return name_seed
 
-def clean_username(name_seed):
-    """makes sure that the name is unique
-    and is no longer than 30 characters"""
-    username = get_unique_username(name_seed)
-    if len(username) > 30:
-        username = get_unique_username(username[:28])
-        if len(username) > 30:
-            #will allow about a million extra possible unique names
-            username = get_unique_username(username[:24])
-    return username
+# def clean_username(name_seed):
+#     """makes sure that the name is unique
+#     and is no longer than 30 characters"""
+#     username = get_unique_username(name_seed)
+#     if len(username) > 30:
+#         username = get_unique_username(username[:28])
+#         if len(username) > 30:
+#             #will allow about a million extra possible unique names
+#             username = get_unique_username(username[:24])
+#     return username
 
 def create_askbot_user(zd_user):
     """create askbot user from zendesk user record
     return askbot user or None, if there is error
     """
     #special treatment for the user name
-    raw_username = unescape(zd_user.name)
-    username = clean_username(raw_username)
-    if len(username) > 30:#nearly impossible skip such user
-        print "Warning: could not import user %s" % raw_username
-        return None
+    # raw_username = unescape(zd_user.name)
+    #username = clean_username(raw_username)
+    # if len(username) > 30:#nearly impossible skip such user
+    #     print "Warning: could not import user %s" % raw_username
+    #     return None
 
     if zd_user.email is None:
         email = ''
+        username = zd_user.name.replace(" ", "_").lower()
     else:
         email = zd_user.email
+        username = email
+    username = get_unique_username(username)
 
     ab_user = askbot_models.User(
         email = email,
@@ -81,12 +86,26 @@ def create_askbot_user(zd_user):
 def post_question(zendesk_entry):
     """posts question to askbot, using zendesk entry"""
     try:
-        return zendesk_entry.get_author().post_question(
+        askbot_post = zendesk_entry.get_author().post_question(
             title = zendesk_entry.title,
             body_text = zendesk_entry.get_body_text(),
             tags = zendesk_entry.get_tag_names(),
             timestamp = zendesk_entry.created_at
         )
+        # seed the views with the # hits we had on zendesk
+        askbot_post.thread.increase_view_count(increment=zendesk_entry.hits)
+        # UNIMPLEMENTED: seed the votes with the # votes we had on zendesk
+        # askbot_post.thread.increase_vote_count(increment=zendesk_entry.votes_count)
+        # close threads that were locked in Zendesk and assign a default
+        # reason of "question answered". Set default user to admin.
+        if zendesk_entry.is_locked:
+            askbot_post.thread.set_closed_status(
+                closed=True, 
+                closed_by=ADMIN_USER, 
+                closed_at=datetime.now(), 
+                close_reason=5)
+        askbot_post.thread.save()
+        return askbot_post
     except Exception, e:
         msg = unicode(e)
         print "Warning: entry %d dropped: %s" % (zendesk_entry.entry_id, msg)
@@ -94,11 +113,18 @@ def post_question(zendesk_entry):
 def post_answer(zendesk_post, question = None):
     """posts answer to askbot, using zendesk post"""
     try:
-        return zendesk_post.get_author().post_answer(
+        askbot_post = zendesk_post.get_author().post_answer(
             question = question,
             body_text = zendesk_post.get_body_text(),
             timestamp = zendesk_post.created_at
         )
+        # mark answer as accepted if it's been marked as an answer in Zendesk
+        # Zendesk supports multiple answers so this will re-mark the answer
+        # for each one and ultimately end on the most recent post.
+        if zendesk_post.is_informative:
+            askbot_post.thread.accepted_answer_id = askbot_post.id
+            askbot_post.thread.save()
+        return askbot_post
     except Exception, e:
         msg = unicode(e)
         print "Warning: post %d dropped: %s" % (zendesk_post.post_id, msg)
@@ -150,8 +176,10 @@ class Command(BaseCommand):
 
         self.tar = tarfile.open(args[0], 'r:gz')
 
-        # sys.stdout.write('Reading users.xml: ')
-        # self.read_users()
+        # read in all of the data to import and store it in our temporary
+        # tables.
+        sys.stdout.write('Reading users.xml: ')
+        self.read_users()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
         sys.stdout.write('Reading entries.xml: ')
@@ -161,10 +189,13 @@ class Command(BaseCommand):
         # sys.stdout.write('Reading tickets.xml: ')
         # self.read_tickets()
 
-
-        # sys.stdout.write("Importing user accounts: ")
-        # self.import_users()
+        # start importing data from the temp zendesk_* tables into the askbot
+        # tables
+        # users
+        sys.stdout.write("Importing user accounts: ")
+        self.import_users()
         
+        # forums
         forum_ids = []
         for forum in zendesk_models.Forum.objects.all():
             if not forum.viewable_to_public():
@@ -369,7 +400,6 @@ class Command(BaseCommand):
 
         console.print_action('%d users added' % added_users, nowipe = True)
 
-
     @transaction.autocommit
     def import_posts(self, question, entry):
         # followup posts on a forum topic
@@ -381,7 +411,7 @@ class Command(BaseCommand):
             if not answer:
                 continue
             post.ab_id = answer.id
-            post.save
+            post.save()
 
     @transaction.autocommit
     def import_entry(self, entry):
