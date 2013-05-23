@@ -185,7 +185,7 @@ class Command(BaseCommand):
         xml_file = self.tar.extractfile(file_info)
         return etree.parse(xml_file)
 
-    @transaction.commit_manually
+    @transaction.autocommit
     def read_xml_file(self,
             file_name = None,
             entry_name = None,
@@ -235,7 +235,6 @@ class Command(BaseCommand):
             #             sub_instance = model()
                         
             instance.save()
-            transaction.commit()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
@@ -323,7 +322,7 @@ class Command(BaseCommand):
             extra_field_mappings = (('nice-id', 'ticket_id'),)
         )
 
-    # @transaction.commit_manually
+    @transaction.autocommit
     def import_users(self):
         added_users = 0
         for zd_user in zendesk_models.User.objects.all():
@@ -368,11 +367,10 @@ class Command(BaseCommand):
                     #drop user association
                     pass
 
-            # transaction.commit()
         console.print_action('%d users added' % added_users, nowipe = True)
 
 
-    # @transaction.commit_manually
+    @transaction.autocommit
     def import_posts(self, question, entry):
         # followup posts on a forum topic
         for post in zendesk_models.Post.objects.filter(
@@ -384,9 +382,8 @@ class Command(BaseCommand):
                 continue
             post.ab_id = answer.id
             post.save
-            # transaction.commit()
 
-    # @transaction.commit_manually
+    @transaction.autocommit
     def import_entry(self, entry):
         # top-level forum topics
         question = post_question(entry)
@@ -394,7 +391,6 @@ class Command(BaseCommand):
             return
         entry.ab_id = question.id
         entry.save()
-        # transaction.commit()
         self.import_posts(question, entry)
         #console.print_action(question.title)
         return True
