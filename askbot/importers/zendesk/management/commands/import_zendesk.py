@@ -25,7 +25,7 @@ from askbot.importers.zendesk import models as zendesk_models
 #a hack, did not know how to parse timezone offset
 ZERO_TIME = datetime.strptime('00:00', '%H:%M')
 # load admin user for user where needed (eg. user who closed thread)
-ADMIN_USER = askbot_models.User.objects.get(id=1)
+ADMIN_USER = askbot_models.User.objects.filter(is_superuser=True)[:1]
 
 def get_unique_username(name_seed):
     """returns unique user name, by modifying the
