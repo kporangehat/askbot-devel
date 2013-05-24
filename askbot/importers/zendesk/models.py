@@ -131,6 +131,7 @@ class Forum(models.Model):
             return True
 
 class Ticket(models.Model):
+    """todo: custom fields"""
     assigned_at = models.DateTimeField()
     assignee_id = models.IntegerField()
     base_score = models.IntegerField()
@@ -165,7 +166,7 @@ class Ticket(models.Model):
     has_incidents = models.BooleanField(default = False)
 
 class Comment(models.Model):
-    """todo: attachments and custom fields"""
+    """todo: attachments"""
     author_id = models.IntegerField()
     created_at = models.DateTimeField()
     is_public = models.BooleanField(default = True)

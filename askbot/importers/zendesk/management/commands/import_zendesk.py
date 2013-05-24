@@ -169,6 +169,11 @@ def get_val(elem, field_name):
                 return dt + tzoffset
         else:
             return None
+    elif field_type == 'array':
+        # returns a list of child elements
+        # comments > comment
+        sfield_name = field_name[:-1]
+        return field.findall(sfield_name)
     else:
         return raw_val
 
@@ -183,31 +188,34 @@ class Command(BaseCommand):
         # tables.
         # sys.stdout.write('Reading users.xml: ')
         # self.read_users()
-        sys.stdout.write('Reading forums.xml: ')
-        self.read_forums()
-        sys.stdout.write('Reading entries.xml: ')
-        self.read_entries()
-        sys.stdout.write('Reading posts.xml: ')
-        self.read_posts()
-        # sys.stdout.write('Reading tickets.xml: ')
-        # self.read_tickets()
+        # sys.stdout.write('Reading forums.xml: ')
+        # self.read_forums()
+        # sys.stdout.write('Reading entries.xml: ')
+        # self.read_entries()
+        # sys.stdout.write('Reading posts.xml: ')
+        # self.read_posts()
+        sys.stdout.write('Reading tickets.xml: ')
+        self.read_tickets()
 
         # start importing data from the temp zendesk_* tables into the askbot
         # tables
+        
         # users
+        # ---------------------------------------------------------------------
         # sys.stdout.write("Importing user accounts: ")
         # self.import_users()
         
         # forums
-        forum_ids = []
-        for forum in zendesk_models.Forum.objects.all():
-            if not forum.viewable_to_public():
-                console.print_action("skipping non-public forum \"%s\"" % forum.name, nowipe=True)
-                continue
-            if console.get_yes_or_no("Import forum \"%s\" ?" % forum.name) == 'yes':
-                forum_ids.append(forum.forum_id)
-        sys.stdout.write("Loading forum threads: ")
-        self.import_forum(forum_ids=forum_ids)
+        # ---------------------------------------------------------------------
+        # forum_ids = []
+        # for forum in zendesk_models.Forum.objects.all():
+        #     if not forum.viewable_to_public():
+        #         console.print_action("skipping non-public forum \"%s\"" % forum.name, nowipe=True)
+        #         continue
+        #     if console.get_yes_or_no("Import forum \"%s\" ?" % forum.name) == 'yes':
+        #         forum_ids.append(forum.forum_id)
+        # sys.stdout.write("Loading forum threads: ")
+        # self.import_forum(forum_ids=forum_ids)
 
     def get_file(self, file_name):
         first_item = self.tar.getnames()[0]
@@ -239,11 +247,9 @@ class Command(BaseCommand):
         * sub_entities - list of fields that should be treated as separate
                     models (like Ticket.comments)
                     [{'comments': (
-                        'comment', 
                         zendesk_models.Comment, 
                         ['author-id', 'created-at', 'is-public', 'type', 
                             'value', 'via-id', 'ticket-id'], 
-                        None,
                         None)
                     }]
         """
@@ -263,25 +269,33 @@ class Command(BaseCommand):
                     value = get_val(xml_entry, field)
                     setattr(instance, model_field_name, value)
 
-            # if sub_entities:
-            #     # {}
-            #     for sub_entity in sub_entities:
-            #         # 'comments', ()
-            #         for sub_field_name, sub_def in sub_entity:
-            #             # 'comment', zendesk_models.Comment, ['author-id', ...], None, None
-            #             sub_entry_name, sub_model, sub_fields, sub_extra_field_mappings, _ = sub_def
-            #             # <#zendesk_models.Comment>
-            #             sub_instance = sub_model()
-            #             # 'author_id' in ['author-id', ...]
-            #             for sub_field in sub_fields:
-            #                 # 1234567
-            #                 sub_value = get_val(xml_entry, sub_field)
-            #                 sub_model_field_name = sub_field.replace('-', '_')
-            #                 sub_max_length = sub_instance._meta.get_field(sub_model_field_name).max_length
-            #                 if sub_value and sub_max_length:
-            #                     sub_value = sub_value[:sub_max_length]
+            sub_instances = []
+            for sub_entity in sub_entities:
+                # 'comments', ()
+                for sub_field_name, sub_def in sub_entity:
+                    # [<Element comment at 0x102c07370>]
+                    sub_list = get_val(xml_entry, sub_field_name)
+                    # zendesk_models.Comment, ['author-id', ...], None
+                    sub_model, sub_fields, sub_extra_field_mappings = sub_def
+                    for child in sub_list:
+                    # <#zendesk_models.Comment>
+                        sub_instance = sub_model()
+                        # 'author_id' in ['author-id', ...]
+                        for sub_field in sub_fields:
+                            # 1234567
+                            sub_value = get_val(child, sub_field)
+                            sub_model_field_name = sub_field.replace('-', '_')
+                            sub_max_length = sub_instance._meta.get_field(sub_model_field_name).max_length
+                            if sub_value and sub_max_length:
+                                sub_value = sub_value[:sub_max_length]
+                            setattr(sub_instance, sub_model_field_name, sub_value)
+                        sub_instances.append(sub_instance)
 
             instance.save()
+            for si in sub_instances:
+                # set the parent id
+                setattr(sub_instance, "%s_id" % entry_name, instance.id)
+                si.save()
             items_saved += 1
             console.print_action('%d items' % items_saved)
         console.print_action('%d items' % items_saved, nowipe = True)
@@ -351,7 +365,11 @@ class Command(BaseCommand):
         )
 
     def read_tickets(self):
-        """todo: add comments"""
+        """this is a little more complex in that we want to read the comments
+        as well which are child elements on the ticket. Define this with the
+        sub_entities parameter with tag name that is an array, model to save
+        to and fields. It will automatically add a link to the ticket using
+        a ticket_id field"""
         self.read_xml_file(
             file_name = 'tickets.xml',
             entry_name = 'ticket',
@@ -367,7 +385,16 @@ class Command(BaseCommand):
                 'ticket-type-id', 'updated-at', 'updated-by-type-id', 'via-id', 
                 'score', 'problem-id', 'has-incidents'
             ),
-            extra_field_mappings = (('nice-id', 'ticket_id'),)
+            extra_field_mappings = (('nice-id', 'ticket_id'),),
+            sub_entities = [
+                {'comments': (
+                    zendesk_models.Comment, 
+                    ['author-id', 'created-at', 'is-public', 'type', 'value', 
+                        'via-id', 'ticket-id'], 
+                    None
+                    )
+                }
+            ]
         )
 
     @transaction.autocommit
