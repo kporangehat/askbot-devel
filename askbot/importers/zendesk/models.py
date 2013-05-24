@@ -155,7 +155,7 @@ class Ticket(models.Model):
     solved_at = models.DateTimeField(null=True)
     status_id = models.IntegerField()
     status_updated_at = models.DateTimeField()
-    subject = models.CharField(max_length = 255)
+    subject = models.CharField(max_length = 255, null=True)
     submitter_id = models.IntegerField()
     ticket_type_id = models.IntegerField()
     updated_at = models.DateTimeField()
