@@ -181,8 +181,8 @@ class Command(BaseCommand):
 
         # read in all of the data to import and store it in our temporary
         # tables.
-        sys.stdout.write('Reading users.xml: ')
-        self.read_users()
+        # sys.stdout.write('Reading users.xml: ')
+        # self.read_users()
         sys.stdout.write('Reading forums.xml: ')
         self.read_forums()
         sys.stdout.write('Reading entries.xml: ')
@@ -195,8 +195,8 @@ class Command(BaseCommand):
         # start importing data from the temp zendesk_* tables into the askbot
         # tables
         # users
-        sys.stdout.write("Importing user accounts: ")
-        self.import_users()
+        # sys.stdout.write("Importing user accounts: ")
+        # self.import_users()
         
         # forums
         forum_ids = []
@@ -307,13 +307,14 @@ class Command(BaseCommand):
             entry_name = 'entry',
             model = zendesk_models.Entry,
             fields = (
-                'body', 'created-at', 'tags', 'flag-type-id', 'forum-id',
+                'body', 'created-at', 'flag-type-id', 'forum-id',
                 'hits', 'entry-id', 'is-highlighted', 'is-locked', 'is-pinned',
                 'is-public', 'organization-id', 'position', 'posts-count', 
                 'submitter-id', 'title', 'updated-at', 'votes-count'
             ),
             extra_field_mappings = (
                 ('id', 'entry_id'),
+                ('current-tags', 'tags'),
             )
         )
 
