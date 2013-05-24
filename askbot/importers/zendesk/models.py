@@ -132,7 +132,7 @@ class Forum(models.Model):
 
 class Ticket(models.Model):
     """todo: custom fields"""
-    assigned_at = models.DateTimeField()
+    assigned_at = models.DateTimeField(null=True)
     assignee_id = models.IntegerField(null=True)
     base_score = models.IntegerField()
     created_at = models.DateTimeField()
