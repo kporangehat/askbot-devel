@@ -143,7 +143,7 @@ class Ticket(models.Model):
     entry_id = models.IntegerField(null = True)
     external_id = models.IntegerField(null = True)
     group_id = models.IntegerField(null = True)
-    initially_assigned_at = models.DateTimeField()
+    initially_assigned_at = models.DateTimeField(null=True)
     latest_recipients = models.CharField(max_length = 255, null = True)
     ticket_id = models.IntegerField()
     organization_id = models.IntegerField(null = True)
