@@ -149,7 +149,7 @@ class Ticket(models.Model):
     organization_id = models.IntegerField(null = True)
     original_recipient_address = models.CharField(max_length = 255, null = True)
     priority_id = models.IntegerField()
-    recipient = models.CharField(max_length = 255)
+    recipient = models.CharField(max_length = 255, null=True)
     requester_id = models.IntegerField()
     resolution_time = models.IntegerField(null = True)
     solved_at = models.DateTimeField()
