@@ -1252,7 +1252,7 @@ def send_email_key(email, key, handler_url_name='user_account_recover'):
     """private function. sends email containing validation key
     to user's email address
     """
-    subject = _("Recover your %(site)s account") % \
+    subject = ("Recover your %(site)s account") % \
                 {'site': askbot_settings.APP_SHORT_NAME}
 
     data = {
