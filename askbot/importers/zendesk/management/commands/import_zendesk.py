@@ -272,7 +272,7 @@ class Command(BaseCommand):
             sub_instances = []
             for sub_entity in sub_entities:
                 # 'comments', ()
-                for sub_field_name, sub_def in sub_entity:
+                for sub_field_name, sub_def in sub_entity.iteritems():
                     # [<Element comment at 0x102c07370>]
                     sub_list = get_val(xml_entry, sub_field_name)
                     # zendesk_models.Comment, ['author-id', ...], None
