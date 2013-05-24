@@ -107,11 +107,31 @@ def post_question(zendesk_entry):
                 closed_by=ADMIN_USER, 
                 closed_at=datetime.now(), 
                 close_reason=5)
-        askbot_post.thread.save()
+            askbot_post.thread.save()
         return askbot_post
     except Exception, e:
         msg = unicode(e)
         print "Warning: entry %d dropped: %s" % (zendesk_entry.entry_id, msg)
+
+def post_question_from_ticket(zendesk_ticket):
+    """posts question to askbot, using zendesk ticket"""
+    try:
+        askbot_post = zendesk_ticket.get_author().post_question(
+            title = zendesk_ticket.title,
+            body_text = zendesk_ticket.get_body_text(),
+            tags = zendesk_ticket.get_tag_names(),
+            timestamp = zendesk_ticket.created_at
+        )
+        # UNIMPLEMENTED: seed the views with the # hits we had on zendesk
+        # askbot_post.thread.increase_view_count(increment=zendesk_ticket.hits)
+        # UNIMPLEMENTED: seed the votes with the # votes we had on zendesk
+        # askbot_post.thread.increase_vote_count(increment=zendesk_ticket.votes_count)
+        # close threads that were locked in Zendesk and assign a default
+        # reason of "question answered". Set default user to admin.
+        return askbot_post
+    except Exception, e:
+        msg = unicode(e)
+        print "Warning: ticket %d dropped: %s" % (zendesk_ticket.ticket_id, msg)
 
 def post_answer(zendesk_post, question = None):
     """posts answer to askbot, using zendesk post"""
@@ -131,6 +151,21 @@ def post_answer(zendesk_post, question = None):
     except Exception, e:
         msg = unicode(e)
         print "Warning: post %d dropped: %s" % (zendesk_post.post_id, msg)
+
+def post_answer_from_comment(zendesk_comment, question = None):
+    """posts answer to askbot, using zendesk comment"""
+    try:
+        askbot_post = zendesk_comment.get_author().post_answer(
+            question = question,
+            body_text = zendesk_comment.get_body_text(),
+            timestamp = zendesk_comment.created_at
+        )
+        # no way to know which comment is the "accepted" answer. Maybe we hard
+        # code the first or last assuming the ticket is 'solved'?
+        return askbot_post
+    except Exception, e:
+        msg = unicode(e)
+        print "Warning: comment %d dropped: %s" % (zendesk_comment.id, msg)
 
 def get_val(elem, field_name):
     field = elem.find(field_name)
@@ -204,6 +239,11 @@ class Command(BaseCommand):
         # ---------------------------------------------------------------------
         # sys.stdout.write("Importing user accounts: ")
         # self.import_users()
+
+        # tickets
+        # ---------------------------------------------------------------------
+        sys.stdout.write("Importing tickets: ")
+        self.import_tickets()
         
         # forums
         # ---------------------------------------------------------------------
@@ -312,6 +352,7 @@ class Command(BaseCommand):
                 'roles', 'time-zone', 'updated-at', 'uses-12-hour-clock',
                 'email', 'is-verified', 'photo-url'
             ),
+            # todo: rename this to zendesk_user_id
             extra_field_mappings = (('id', 'user_id'),)
         )
 
@@ -486,6 +527,36 @@ class Command(BaseCommand):
                     thread_count += 1
                 console.print_action(str(thread_count))
             console.print_action(str(thread_count), nowipe = True)
+
+    @transaction.autocommit
+    def import_comments(self, question, ticket):
+        # comments on a ticket
+        first = True
+        for comment in zendesk_models.Comment.objects.filter(
+                        ticket_id=ticket.ticket_id
+                        ).order_by('created_at'):
+            # create answers, first comment is a copy of the one on the ticket
+            if first:
+                first = False
+                continue
+            answer = post_answer_from_ticket(ticket, question=question)
+            if not answer:
+                continue
+            ticket.ab_id = answer.id
+            ticket.save()
+
+    @transaction.autocommit
+    def import_tickets(self):
+        # HARDCODED TICKETS IN LAST YEAR
+        tickets = zendesk_models.Ticket.objects.filter(created_at__gt=datetime.date(2012, 5, 30))
+        for ticket in tickets:
+            question = post_question_from_ticket(ticket)
+            if not question:
+                continue
+            ticket.ab_id = question.id
+            ticket.save()
+            self.import_comments(question, ticket)
+            return True
 
 
     # @transaction.commit_manually
