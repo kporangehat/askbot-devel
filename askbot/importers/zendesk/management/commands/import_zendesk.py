@@ -69,7 +69,10 @@ def create_askbot_user(zd_user):
         username = zd_user.name.replace(" ", "_").lower()
     else:
         email = zd_user.email
-        username = email
+        # temporary invalidate emails so we don't spam people by accident
+        if not email.endswith('shotgunsoftware.com'):
+            email = "%s@example.com" % email.split('@')[0]
+        username = zd_user.email
     username = get_unique_username(username)
 
     ab_user = askbot_models.User(
@@ -240,7 +243,7 @@ class Command(BaseCommand):
                         zendesk_models.Comment, 
                         ['author-id', 'created-at', 'is-public', 'type', 
                             'value', 'via-id', 'ticket-id'], 
-                        None, 
+                        None,
                         None)
                     }]
         """
@@ -259,12 +262,25 @@ class Command(BaseCommand):
                 for (field, model_field_name) in extra_field_mappings:
                     value = get_val(xml_entry, field)
                     setattr(instance, model_field_name, value)
+
             # if sub_entities:
+            #     # {}
             #     for sub_entity in sub_entities:
+            #         # 'comments', ()
             #         for sub_field_name, sub_def in sub_entity:
-            #             sub_entry_name, sub_model, sub_fields, sub_extra_field_mappings = sub_def
-            #             sub_instance = model()
-                        
+            #             # 'comment', zendesk_models.Comment, ['author-id', ...], None, None
+            #             sub_entry_name, sub_model, sub_fields, sub_extra_field_mappings, _ = sub_def
+            #             # <#zendesk_models.Comment>
+            #             sub_instance = sub_model()
+            #             # 'author_id' in ['author-id', ...]
+            #             for sub_field in sub_fields:
+            #                 # 1234567
+            #                 sub_value = get_val(xml_entry, sub_field)
+            #                 sub_model_field_name = sub_field.replace('-', '_')
+            #                 sub_max_length = sub_instance._meta.get_field(sub_model_field_name).max_length
+            #                 if sub_value and sub_max_length:
+            #                     sub_value = sub_value[:sub_max_length]
+
             instance.save()
             items_saved += 1
             console.print_action('%d items' % items_saved)
