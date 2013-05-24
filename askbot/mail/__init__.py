@@ -93,6 +93,7 @@ def clean_html_email(email_body):
     soup = BeautifulSoup(email_body, 'html5lib')
     body_element = soup.find('body')
     filter_func = lambda s: bool(s.strip())
+    logging.error("email_body: %s" % email_body)
     phrases = map(
         lambda s: s.strip(),
         filter(filter_func, body_element.get_text().split('\n'))
@@ -122,6 +123,7 @@ def send_mail(
 
     if raise_on_failure is True, exceptions.EmailNotSent is raised
     """
+    logging.error("Sending email to %s" % recipient_list)
     body_text = absolutize_urls(body_text)
     try:
         assert(subject_line is not None)
