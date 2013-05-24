@@ -51,7 +51,10 @@ class Entry(models.Model):
         # tags = TAGS[self.forum_id]
         # if self.tags:
         #     tags += " %s" % self.tags
-        return self.tags
+        if not self.tags:
+            return "forum"
+        else:
+            return "forum %s" % self.tags
 
 class Post(models.Model):
     """
@@ -164,6 +167,25 @@ class Ticket(models.Model):
     score = models.IntegerField()
     problem_id = models.IntegerField(null = True)
     has_incidents = models.BooleanField(default = False)
+    ab_id = models.IntegerField(null = True)
+
+    def get_author(self):
+        """returns author of the comment, from the Django user table"""
+        zendesk_user = User.objects.get(user_id = self.requester_id)
+        return DjangoUser.objects.get(id = zendesk_user.askbot_user_id)
+
+    def get_body_text(self):
+        """unescapes html entities in the body text,
+        saves in the internal cache and returns the value"""
+        if not hasattr(self, '_body_text'):
+            self._body_text = unescape(self.description)
+        return self._body_text
+
+    def get_tag_names(self):
+        if not self.tags:
+            return "ticket"
+        else:
+            return "ticket %s" % self.tags
 
 class Comment(models.Model):
     """todo: attachments"""
@@ -174,4 +196,17 @@ class Comment(models.Model):
     value = models.CharField(max_length = 1000)
     via_id = models.IntegerField()
     ticket_id = models.IntegerField()
+    ab_id = models.IntegerField(null = True)
+
+    def get_author(self):
+        """returns author of the comment, from the Django user table"""
+        zendesk_user = User.objects.get(user_id = self.author_id)
+        return DjangoUser.objects.get(id = zendesk_user.askbot_user_id)
+
+    def get_body_text(self):
+        """unescapes html entities in the body text,
+        saves in the internal cache and returns the value"""
+        if not hasattr(self, '_body_text'):
+            self._body_text = unescape(self.value)
+        return self._body_text
  
