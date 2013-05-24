@@ -378,7 +378,7 @@ class Command(BaseCommand):
                 'assigned-at', 'assignee-id', 'base-score', 'created-at', 
                 'current-collaborators','current-tags','description', 
                 'due-date', 'entry-id', 'external-id', 'group-id', 
-                'initially-assigned-at', 'latest-recipients', 'nice-id', 
+                'initially-assigned-at', 'latest-recipients', 
                 'organization-id', 'original-recipient-address', 'priority-id', 
                 'recipient', 'requester-id', 'resolution-time', 'solved-at', 
                 'status-id', 'status-updated-at', 'subject', 'submitter-id', 
