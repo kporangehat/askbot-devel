@@ -294,7 +294,7 @@ class Command(BaseCommand):
             instance.save()
             for si in sub_instances:
                 # set the parent id
-                setattr(sub_instance, "%s_id" % entry_name, instance.id)
+                setattr(si, "%s_id" % entry_name, instance.id)
                 si.save()
             items_saved += 1
             console.print_action('%d items' % items_saved)
