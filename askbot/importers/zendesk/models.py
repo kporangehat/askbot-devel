@@ -44,14 +44,14 @@ class Entry(models.Model):
 
     def get_tag_names(self):
         """return tags on entry as well as forum title as a tag"""
-        if self.forum_id not in TAGS:
-            forum = Forum.objects.get(forum_id = self.forum_id)
-            tag_name = re.sub(r'\s+', '_', forum.name.lower())
-            TAGS[self.forum_id] = tag_name
-        tags = TAGS[self.forum_id]
-        if self.tags:
-            tags += " %s" % self.tags
-        return tags
+        # if self.forum_id not in TAGS:
+        #     forum = Forum.objects.get(forum_id = self.forum_id)
+        #     tag_name = re.sub(r'\s+', '_', forum.name.lower())
+        #     TAGS[self.forum_id] = tag_name
+        # tags = TAGS[self.forum_id]
+        # if self.tags:
+        #     tags += " %s" % self.tags
+        return self.tags
 
 class Post(models.Model):
     """
