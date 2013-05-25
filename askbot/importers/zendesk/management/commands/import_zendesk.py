@@ -539,7 +539,7 @@ class Command(BaseCommand):
             if first:
                 first = False
                 continue
-            answer = post_answer_from_ticket(ticket, question=question)
+            answer = post_answer_from_comment(ticket, question=question)
             if not answer:
                 continue
             ticket.ab_id = answer.id
