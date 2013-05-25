@@ -229,8 +229,8 @@ class Command(BaseCommand):
         # self.read_entries()
         # sys.stdout.write('Reading posts.xml: ')
         # self.read_posts()
-        sys.stdout.write('Reading tickets.xml: ')
-        self.read_tickets()
+        # sys.stdout.write('Reading tickets.xml: ')
+        # self.read_tickets()
 
         # start importing data from the temp zendesk_* tables into the askbot
         # tables
@@ -548,7 +548,7 @@ class Command(BaseCommand):
     @transaction.autocommit
     def import_tickets(self):
         # HARDCODED TICKETS IN LAST YEAR
-        tickets = zendesk_models.Ticket.objects.filter(created_at__gt=datetime.date(2012, 5, 30))
+        tickets = zendesk_models.Ticket.objects.filter(created_at__gt=datetime(2012, 5, 30))
         for ticket in tickets:
             question = post_question_from_ticket(ticket)
             if not question:
