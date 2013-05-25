@@ -117,7 +117,7 @@ def post_question_from_ticket(zendesk_ticket):
     """posts question to askbot, using zendesk ticket"""
     try:
         askbot_post = zendesk_ticket.get_author().post_question(
-            title = zendesk_ticket.title,
+            title = zendesk_ticket.subject,
             body_text = zendesk_ticket.get_body_text(),
             tags = zendesk_ticket.get_tag_names(),
             timestamp = zendesk_ticket.created_at
@@ -229,8 +229,8 @@ class Command(BaseCommand):
         # self.read_entries()
         # sys.stdout.write('Reading posts.xml: ')
         # self.read_posts()
-        sys.stdout.write('Reading tickets.xml: ')
-        self.read_tickets()
+        # sys.stdout.write('Reading tickets.xml: ')
+        # self.read_tickets()
 
         # start importing data from the temp zendesk_* tables into the askbot
         # tables
