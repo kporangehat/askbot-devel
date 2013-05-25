@@ -381,25 +381,18 @@ body.user-messages {
 
     a.group-name {
         padding: 0px;
-        float:center;
-        margin:5px 0px 5px 10px;
+        float: none;
+        margin: 5px 10px;
     }
     
-    input.group-name{
-        border:none;
-        height: 25px;
-        font-size: 18px;
-        font-weight: 100;
-        text-decoration: none;
+    input.group-name {
+        border: 1px solid #c9c9b5;
+        color: #464646;
         display: block;
-        margin: 0px 10px 0px 10px;
-        width: 140px;
-        font-family: @main-font;
-        font-weight: 100;
-    }
-
-    input.group-name:focus{
-        border:none;
+        font-size: 14px;
+        height: 25px;
+        margin: 0px 10px 5px 10px;
+        padding: 0 5px;
     }
 
     a.group-name:hover{
@@ -418,11 +411,11 @@ body.user-messages {
         float:left;
     }
 
-    .dropdown-menu{
+    .dropdown-menu {
         border-top: none;
-        left: 7%;
+        left: 33px;
         z-index: 10100;
-        a{
+        a {
             color: #666;
             height: 25px;
         }
@@ -1838,17 +1831,17 @@ ul#related-tags li {
 
 .groups-input,
 .users-input {
-    width:152px;
-    padding-left:5px;
-    border:#c9c9b5 1px solid;
-    height:25px;
+    width: 150px;
+    padding-left: 5px;
+    border: #c9c9b5 1px solid;
+    height: 25px;
     font-size: 14px;
 }
 
 .add-groups,
 .add-users {
-    border:0;
-    margin-top:-2px;
+    border: 0;
+    margin: -2px 0 0 0 !important;
 }
 
 .share-input-col {
@@ -1862,36 +1855,6 @@ ul#related-tags li {
     display: block;
     padding: 0 10px;
     height: 25px;
-}
-
-#id_user,
-#id_user_author {
-    height:25px;
-    padding-left:5px;
-    width:395px;
-    font-size:14px;
-}
-
-.groups-input,
-.users-input {
-    width:152px;
-    padding-left:5px;
-    border:#c9c9b5 1px solid;
-    height:25px;
-    font-size: 14px;
-}
-
-.add-groups,
-.add-users {
-    border:0;
-    margin-top:-2px;
-}
-
-.add-everyone-group {
-    text-align: center;
-    margin: auto;
-    display: block;
-    padding: 0 10px;
 }
 
 #id_user,

@@ -285,7 +285,7 @@
     </script>
 {% endblock %}
 {% block content %}
-    {% if settings.QUESTION_PAGE_TOP_BANNER %}
+    {% if 'QUESTION_PAGE_TOP_BANNER'|show_block_to(request.user) %}
         <div class="banner">{{ settings.QUESTION_PAGE_TOP_BANNER|safe }}</div>
     {% endif %}
     {% if is_cacheable %}

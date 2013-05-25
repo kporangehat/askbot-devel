@@ -16,8 +16,8 @@ SIDEBAR_PROFILE = ConfigurationGroup(
 settings.register(
     values.LongStringValue(
         SIDEBAR_PROFILE,
-        'SIDEBAR_PROFILE_HEADER',
-        description = _('Custom sidebar header'),
+        'SIDEBAR_PROFILE',
+        description = _('Custom sidebar'),
         default = '',
         help_text = _(
                     'Use this area to enter content at the TOP of the sidebar'
@@ -25,23 +25,16 @@ settings.register(
                     '(as well as the sidebar footer), please '
                     'use the HTML validation service to make sure that '
                     'your input is valid and works well in all browsers.'
-                    )
+        )
     )
 )
+
 
 settings.register(
-    values.LongStringValue(
+    values.BooleanValue(
         SIDEBAR_PROFILE,
-        'SIDEBAR_PROFILE_FOOTER',
-        description = _('Custom sidebar footer'),
-        default = '',
-        help_text = _(
-                    'Use this area to enter content at the BOTTOM of the sidebar'
-                    'in HTML format.   When using this option '
-                    '(as well as the sidebar header), please '
-                    'use the HTML validation service to make sure that '
-                    'your input is valid and works well in all browsers.'
-                    )
+        'SIDEBAR_PROFILE_ANON_ONLY',
+        description=_('Show above only to anonymous users'),
+        default=False
     )
 )
-

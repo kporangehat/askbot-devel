@@ -12,7 +12,7 @@
     <div class="clean"></div>
 
     {% for answer in answers %}
-        {% if answers|length > 1 and loop.index == 2 %}
+        {% if loop.index == 2 and 'QUESTION_PAGE_ANSWER_BANNER'|show_block_to(request.user) %}
             <div class="banner">{{ settings.QUESTION_PAGE_ANSWER_BANNER|safe }}</div>
         {% endif %}
         {% include "question/answer_card.html" %}

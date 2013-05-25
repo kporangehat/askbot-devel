@@ -36,11 +36,10 @@
     {% endblock %}
 {% endblock %}
 {% block sidebar %}
-<div class="box">
-    {{ settings.SIDEBAR_PROFILE_HEADER }}
-</div>
-<div class="box">
-    {{ settings.SIDEBAR_PROFILE_FOOTER }}
-</div>
+    {% if 'SIDEBAR_PROFILE'|show_block_to(request.user) %}
+    <div class="box">
+        {{ settings.SIDEBAR_PROFILE }}
+    </div>
+    {% endif %}
 {% endblock %}
 <!-- end of user.html -->

@@ -7,7 +7,7 @@
     {% if request.user.is_authenticated() %}
         askbot['data']['userId'] = {{ request.user.id }};
         askbot['data']['userName'] = '{{ request.user.username|escape }}';
-        askbot['data']['userIsAdminOrMod'] = {{ request.user.is_administrator()|as_js_bool }};
+        askbot['data']['userIsAdminOrMod'] = {{ request.user.is_administrator_or_moderator()|as_js_bool }};
         askbot['data']['userIsAdmin'] = {{ request.user.is_administrator()|as_js_bool }};
         askbot['data']['userReputation'] = {{ request.user.reputation }};
     {% else %}

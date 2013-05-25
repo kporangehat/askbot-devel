@@ -97,9 +97,6 @@
             askbot['urls']['add_group'] = "{% url add_group %}";
             var group_dropdown = new GroupDropdown({{ group_list }});
             $('.dropdown').append(group_dropdown.getElement());
-            if (askbot['data']['userIsAdmin']) {
-                group_dropdown.enableAddGroups();
-            }
         }
     });
     if (askbot['data']['haveFlashNotifications']) {

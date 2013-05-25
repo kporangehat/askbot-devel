@@ -27,6 +27,15 @@ settings.register(
 )
 
 settings.register(
+    values.BooleanValue(
+        SIDEBAR_QUESTION,
+        'QUESTION_PAGE_TOP_BANNER_ANON_ONLY',
+        default=False,
+        description=_('Show above only to anonymous users'),
+    )
+)
+
+settings.register(
     values.LongStringValue(
         SIDEBAR_QUESTION,
         'QUESTION_PAGE_ANSWER_BANNER',
@@ -42,6 +51,16 @@ settings.register(
 )
 
 settings.register(
+    values.BooleanValue(
+        SIDEBAR_QUESTION,
+        'QUESTION_PAGE_ANSWER_BANNER_ANON_ONLY',
+        default=False,
+        description=_('Show above only to anonymous users'),
+    )
+)
+
+
+settings.register(
     values.LongStringValue(
         SIDEBAR_QUESTION,
         'SIDEBAR_QUESTION_HEADER',
@@ -54,6 +73,15 @@ settings.register(
                     'use the HTML validation service to make sure that '
                     'your input is valid and works well in all browsers.'
                     )
+    )
+)
+
+settings.register(
+    values.BooleanValue(
+        SIDEBAR_QUESTION,
+        'SIDEBAR_QUESTION_HEADER_ANON_ONLY',
+        default=False,
+        description=_('Show above only to anonymous users')
     )
 )
 
@@ -113,3 +141,11 @@ settings.register(
     )
 )
 
+settings.register(
+    values.BooleanValue(
+        SIDEBAR_QUESTION,
+        'SIDEBAR_QUESTION_FOOTER_ANON_ONLY',
+        default=False,
+        description=_('Show above only to anonymous users')
+    )
+)

@@ -1,5 +1,5 @@
 {% import "macros.html" as macros %}
-{% if settings.SIDEBAR_QUESTION_HEADER %}
+{% if 'SIDEBAR_QUESTION_HEADER'|show_block_to(request.user) %}
 <div class="box">
     {{ settings.SIDEBAR_QUESTION_HEADER }}
 </div>
@@ -173,7 +173,7 @@
     {#% endcache %#}
 {% endif %}
 
-{% if settings.SIDEBAR_QUESTION_FOOTER %}
+{% if 'SIDEBAR_QUESTION_FOOTER'|show_block_to(request.user) %}
     <div class="box">
         {{ settings.SIDEBAR_QUESTION_FOOTER }}
     </div>

@@ -79,6 +79,15 @@ def safe_urlquote(text, quote_plus = False):
         return urllib.quote(text.encode('utf8'))
 
 @register.filter
+def show_block_to(block_name, user):
+    block = getattr(askbot_settings, block_name)
+    if block:
+        flag_name = block_name + '_ANON_ONLY'
+        require_anon = getattr(askbot_settings, flag_name, False)
+        return (require_anon is False) or user.is_anonymous()
+    return False
+
+@register.filter
 def strip_path(url):
     """removes path part of the url"""
     return url_utils.strip_path(url)

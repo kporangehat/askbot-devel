@@ -32,6 +32,15 @@ settings.register(
 settings.register(
     values.BooleanValue(
         SIDEBAR_MAIN,
+        'SIDEBAR_MAIN_HEADER_ANON_ONLY',
+        description=_('Show above only to anonymous users'),
+        default=False
+    )
+)
+
+settings.register(
+    values.BooleanValue(
+        SIDEBAR_MAIN,
         'SIDEBAR_MAIN_SHOW_AVATARS',
         description = _('Show avatar block in sidebar'),
         help_text = _(
@@ -91,6 +100,15 @@ settings.register(
                     'use the HTML validation service to make sure that '
                     'your input is valid and works well in all browsers.'
                     )
+    )
+)
+
+settings.register(
+    values.BooleanValue(
+        SIDEBAR_MAIN,
+        'SIDEBAR_MAIN_FOOTER_ANON_ONLY',
+        default=False,
+        description=_('Show above only to anonymous users')
     )
 )
 

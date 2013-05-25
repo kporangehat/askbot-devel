@@ -46,6 +46,8 @@ Programming, bug fixes and documentation
 * `Tyler Mandry <https://github.com/tmandry>`_
 * `Jorge López Pérez <https://github.com/adobo>`_
 * `Zafer Cakmak <https://github.com/xaph>`_
+* `Kevin Porterfield <http://www.shotgunsoftware.com>_`
+* `Robert Martin <https://github.com/bobbydavid>_`
 
 Translations
 ------------
