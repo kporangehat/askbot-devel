@@ -182,10 +182,10 @@ class Ticket(models.Model):
         return self._body_text
 
     def get_tag_names(self):
-        if not self.tags:
+        if not self.current_tags:
             return "ticket"
         else:
-            return "ticket %s" % self.tags
+            return "ticket %s" % self.current_tags
 
 class Comment(models.Model):
     """todo: attachments"""
