@@ -229,8 +229,8 @@ class Command(BaseCommand):
         # self.read_entries()
         # sys.stdout.write('Reading posts.xml: ')
         # self.read_posts()
-        # sys.stdout.write('Reading tickets.xml: ')
-        # self.read_tickets()
+        sys.stdout.write('Reading tickets.xml: ')
+        self.read_tickets()
 
         # start importing data from the temp zendesk_* tables into the askbot
         # tables
