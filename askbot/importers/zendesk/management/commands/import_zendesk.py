@@ -532,6 +532,7 @@ class Command(BaseCommand):
     def import_comments(self, question, ticket):
         # comments on a ticket
         first = True
+        i=0
         for comment in zendesk_models.Comment.objects.filter(
                         ticket_id=ticket.ticket_id, is_public=True
                         ).order_by('created_at'):
@@ -539,6 +540,8 @@ class Command(BaseCommand):
             if first:
                 first = False
                 continue
+            i+=1
+            console.print_action("posting comment %s" % i, nowipe=True)
             answer = post_answer_from_comment(comment, question=question)
             if not answer:
                 continue
@@ -549,14 +552,17 @@ class Command(BaseCommand):
     def import_tickets(self):
         # HARDCODED TICKETS IN LAST YEAR
         tickets = zendesk_models.Ticket.objects.filter(created_at__gt=datetime(2012, 5, 30))
+        console.print_action("found %s tickets from filter... " % len(tickets), nowipe=True)
+        i = 0
         for ticket in tickets:
+            i += 1
+            console.print_action("loading... %s" % i)
             question = post_question_from_ticket(ticket)
             if not question:
                 continue
             ticket.ab_id = question.id
             ticket.save()
             self.import_comments(question, ticket)
-            return True
 
 
     # @transaction.commit_manually
