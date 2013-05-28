@@ -533,13 +533,13 @@ class Command(BaseCommand):
         # comments on a ticket
         first = True
         for comment in zendesk_models.Comment.objects.filter(
-                        ticket_id=ticket.ticket_id
+                        ticket_id=ticket.ticket_id, is_public=True
                         ).order_by('created_at'):
             # create answers, first comment is a copy of the one on the ticket
             if first:
                 first = False
                 continue
-            answer = post_answer_from_comment(ticket, question=question)
+            answer = post_answer_from_comment(comment, question=question)
             if not answer:
                 continue
             ticket.ab_id = answer.id
