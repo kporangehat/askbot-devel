@@ -2325,6 +2325,149 @@ Tag.prototype.createDom = function(){
     }
 };
 
+var PermsHoverCard = function() {
+    WrappedElement.call(this);
+    this._isLoaded = false;
+};
+inherits(PermsHoverCard, WrappedElement);
+
+PermsHoverCard.prototype.setContent = function(data) {
+    this._element.html(data['html']);
+};
+
+PermsHoverCard.prototype.setTrigger = function(trigger) {
+    this._trigger = trigger;
+};
+
+PermsHoverCard.prototype.setPosition = function() {
+    var trigger = this._trigger.getElement();
+    var coors = trigger.offset();
+    var height = trigger.outerHeight();
+    var triangle = this._element.find('.triangle')
+    var triangleHeight = triangle.outerHeight();
+    this._element.css({
+        'top': coors.top + height + triangleHeight,
+        'left': coors.left
+    });
+};
+
+PermsHoverCard.prototype.setUrl = function(url) {
+    this._url = url;
+};
+
+PermsHoverCard.prototype.startLoading = function(onLoad) {
+    var me = this;
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        cache: false,
+        url: this._url,
+        success: function(data) {
+            if (data['success']) {
+                me.setContent(data);
+                me.setPosition();
+                onLoad();
+                me.setIsLoaded();
+            } else {
+                notify.show(data['message']);
+            }
+        }
+    });
+};
+
+PermsHoverCard.prototype.isLoaded = function() {
+    return this._isLoaded;
+};
+
+PermsHoverCard.prototype.setIsLoaded = function() {
+    this._isLoaded = true;
+};
+
+PermsHoverCard.prototype.getOpenHandler = function() {
+    var me = this;
+    return function() {
+        me.clearCancelOpenTimeout();
+        if (me.isLoaded()) {
+            me.getElement().show();
+        } else {
+            var onload = function() {
+                me.getElement().show();
+            }
+            me.startLoading(onload);
+        }
+    };
+};
+
+PermsHoverCard.prototype.setCancelOpenTimoutId = function(timeoutId) {
+    this._cancelOpenTimeoutId = timeoutId;
+};
+
+PermsHoverCard.prototype.clearCancelOpenTimeout = function() {
+    var timeout = this._cancelOpenTimeoutId;
+    if (timeout) {
+        clearTimeout(timeout);
+    }
+};
+
+PermsHoverCard.prototype.getCloseHandler = function() {
+    var me = this;
+    return function() {
+        var element = me.getElement();
+        //start timeout to close
+        var timeout = setTimeout(function() {
+            element.hide();
+            //element.fadeOut('fast');
+        }, 200);
+        me.setCancelOpenTimoutId(timeout);
+    };
+};
+
+PermsHoverCard.prototype.getImmediateCloseHandler = function() {
+    var me = this;
+    return function() {
+        me.getElement().hide();
+    };
+};
+
+PermsHoverCard.prototype.getKeepHandler = function() {
+    var me = this;
+    return function() {
+        me.clearCancelOpenTimeout();
+    };
+};
+
+PermsHoverCard.prototype.createDom = function() {
+    var element = this.makeElement('div');
+    this._element = element;
+    element.addClass('hovercard');
+    element.hover(
+        this.getKeepHandler(),
+        this.getCloseHandler()
+    );
+    this._element.hide();
+};
+
+var ShowPermsTrigger = function() {
+    WrappedElement.call(this);
+};
+inherits(ShowPermsTrigger, WrappedElement);
+
+ShowPermsTrigger.prototype.decorate = function(element) {
+    this._element = element;
+    var hoverCard = new PermsHoverCard();
+    this._hoverCard = hoverCard;
+    $('body').append(hoverCard.getElement());
+
+    hoverCard.setTrigger(this);
+    hoverCard.setUrl(element.data('url'));
+
+    var onEnter = hoverCard.getOpenHandler();
+    var onExit = hoverCard.getCloseHandler();
+    element.hover(onEnter, onExit);
+    var onClose = hoverCard.getImmediateCloseHandler();
+    $('body').click(onClose);
+};
+
 //Search Engine Keyword Highlight with Javascript
 //http://scott.yang.id.au/code/se-hilite/
 Hilite={elementid:"content",exact:true,max_nodes:1000,onload:true,style_name:"hilite",style_name_suffix:true,debug_referrer:""};Hilite.search_engines=[["local","q"],["cnprog\\.","q"],["google\\.","q"],["search\\.yahoo\\.","p"],["search\\.msn\\.","q"],["search\\.live\\.","query"],["search\\.aol\\.","userQuery"],["ask\\.com","q"],["altavista\\.","q"],["feedster\\.","q"],["search\\.lycos\\.","q"],["alltheweb\\.","q"],["technorati\\.com/search/([^\\?/]+)",1],["dogpile\\.com/info\\.dogpl/search/web/([^\\?/]+)",1,true]];Hilite.decodeReferrer=function(d){var g=null;var e=new RegExp("");for(var c=0;c<Hilite.search_engines.length;c++){var f=Hilite.search_engines[c];e.compile("^http://(www\\.)?"+f[0],"i");var b=d.match(e);if(b){var a;if(isNaN(f[1])){a=Hilite.decodeReferrerQS(d,f[1])}else{a=b[f[1]+1]}if(a){a=decodeURIComponent(a);if(f.length>2&&f[2]){a=decodeURIComponent(a)}a=a.replace(/\'|"/g,"");a=a.split(/[\s,\+\.]+/);return a}break}}return null};Hilite.decodeReferrerQS=function(f,d){var b=f.indexOf("?");var c;if(b>=0){var a=new String(f.substring(b+1));b=0;c=0;while((b>=0)&&((c=a.indexOf("=",b))>=0)){var e,g;e=a.substring(b,c);b=a.indexOf("&",c)+1;if(e==d){if(b<=0){return a.substring(c+1)}else{return a.substring(c+1,b-1)}}else{if(b<=0){return null}}}}return null};Hilite.hiliteElement=function(f,e){if(!e||f.childNodes.length==0){return}var c=new Array();for(var b=0;b<e.length;b++){e[b]=e[b].toLowerCase();if(Hilite.exact){c.push("\\b"+e[b]+"\\b")}else{c.push(e[b])}}c=new RegExp(c.join("|"),"i");var a={};for(var b=0;b<e.length;b++){if(Hilite.style_name_suffix){a[e[b]]=Hilite.style_name+(b+1)}else{a[e[b]]=Hilite.style_name}}var d=function(m){var j=c.exec(m.data);if(j){var n=j[0];var i="";var h=m.splitText(j.index);var g=h.splitText(n.length);var l=m.ownerDocument.createElement("SPAN");m.parentNode.replaceChild(l,h);l.className=a[n.toLowerCase()];l.appendChild(h);return l}else{return m}};Hilite.walkElements(f.childNodes[0],1,d)};Hilite.hilite=function(){var a=Hilite.debug_referrer?Hilite.debug_referrer:document.referrer;var b=null;a=Hilite.decodeReferrer(a);if(a&&((Hilite.elementid&&(b=document.getElementById(Hilite.elementid)))||(b=document.body))){Hilite.hiliteElement(b,a)}};Hilite.walkElements=function(d,f,e){var a=/^(script|style|textarea)/i;var c=0;while(d&&f>0){c++;if(c>=Hilite.max_nodes){var b=function(){Hilite.walkElements(d,f,e)};setTimeout(b,50);return}if(d.nodeType==1){if(!a.test(d.tagName)&&d.childNodes.length>0){d=d.childNodes[0];f++;continue}}else{if(d.nodeType==3){d=e(d)}}if(d.nextSibling){d=d.nextSibling}else{while(f>0){d=d.parentNode;f--;if(d.nextSibling){d=d.nextSibling;break}}}}};if(Hilite.onload){if(window.attachEvent){window.attachEvent("onload",Hilite.hilite)}else{if(window.addEventListener){window.addEventListener("load",Hilite.hilite,false)}else{var __onload=window.onload;window.onload=function(){Hilite.hilite();__onload()}}}};

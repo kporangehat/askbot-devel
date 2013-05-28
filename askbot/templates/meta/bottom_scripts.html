@@ -98,6 +98,11 @@
             var group_dropdown = new GroupDropdown({{ group_list }});
             $('.dropdown').append(group_dropdown.getElement());
         }
+        var userRep = $('#userToolsNav .reputation');
+        if (userRep.length) {
+            var showPermsTrigger = new ShowPermsTrigger();
+            showPermsTrigger.decorate(userRep);
+        }
     });
     if (askbot['data']['haveFlashNotifications']) {
         $('#validate_email_alert').click(function(){notify.close(true)})

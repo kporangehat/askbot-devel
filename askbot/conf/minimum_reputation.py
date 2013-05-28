@@ -195,15 +195,6 @@ settings.register(
 settings.register(
     livesettings.IntegerValue(
         MIN_REP,
-        'MIN_REP_TO_LOCK_POSTS',
-        default=400,
-        description=_('Lock posts')
-    )
-)
-
-settings.register(
-    livesettings.IntegerValue(
-        MIN_REP,
         'MIN_REP_TO_HAVE_STRONG_URL',
         default=25,
         description=_('Remove rel=nofollow from own homepage'),

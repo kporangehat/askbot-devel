@@ -638,3 +638,65 @@ def get_comment(request):
     comment = models.Post.objects.get(post_type='comment', id=id)
     request.user.assert_can_edit_comment(comment)
     return {'text': comment.text}
+
+
+@csrf.csrf_exempt
+@ajax_only
+@anonymous_forbidden
+@get_only
+def get_perms_data(request):
+    """returns details about permitted activities
+    according to the users reputation
+    """
+
+    items = (
+        'MIN_REP_TO_VOTE_UP',
+        'MIN_REP_TO_VOTE_DOWN',
+    )
+
+    if askbot_settings.MIN_DAYS_TO_ANSWER_OWN_QUESTION > 0:
+        items += ('MIN_REP_TO_ANSWER_OWN_QUESTION',)
+
+    if askbot_settings.ACCEPTING_ANSWERS_ENABLED:
+        items += (
+            'MIN_REP_TO_ACCEPT_OWN_ANSWER',
+            'MIN_REP_TO_ACCEPT_ANY_ANSWER',
+        )
+
+    items += (
+        'MIN_REP_TO_FLAG_OFFENSIVE',
+        'MIN_REP_TO_DELETE_OTHERS_COMMENTS',
+        'MIN_REP_TO_DELETE_OTHERS_POSTS',
+        'MIN_REP_TO_UPLOAD_FILES',
+        'MIN_REP_TO_INSERT_LINK',
+        'MIN_REP_TO_SUGGEST_LINK',
+        'MIN_REP_TO_CLOSE_OWN_QUESTIONS',
+        'MIN_REP_TO_REOPEN_OWN_QUESTIONS',
+        'MIN_REP_TO_CLOSE_OTHERS_QUESTIONS',
+        'MIN_REP_TO_RETAG_OTHERS_QUESTIONS',
+        'MIN_REP_TO_EDIT_WIKI',
+        'MIN_REP_TO_EDIT_OTHERS_POSTS',
+        'MIN_REP_TO_VIEW_OFFENSIVE_FLAGS',
+    )
+
+    if askbot_settings.ALLOW_ASKING_BY_EMAIL or askbot_settings.REPLY_BY_EMAIL:
+        items += (
+            'MIN_REP_TO_POST_BY_EMAIL',
+            'MIN_REP_TO_TWEET_ON_OTHERS_ACCOUNTS',
+        )
+
+    data = list()
+    for item in items:
+        setting = (
+            askbot_settings.get_description(item),
+            getattr(askbot_settings, item)
+        )
+        data.append(setting)
+    
+    template = get_template('widgets/user_perms.html')
+    html = template.render({
+        'user': request.user,
+        'perms_data': data
+    })
+
+    return {'html': html}

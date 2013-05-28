@@ -2532,12 +2532,21 @@ def toggle_favorite_question(
     about processing the "cancel" option
     another strange thing is that this function unlike others below
     returns a value
+
+    todo: the on-screen follow and email subscription is not
+    fully merged yet - see use of FavoriteQuestion and follow/unfollow question
+    btw, names of the objects/methods is quite misleading ATM
     """
     try:
+        #this attempts to remove the on-screen follow
         fave = FavoriteQuestion.objects.get(thread=question.thread, user=self)
         fave.delete()
         result = False
         question.thread.update_favorite_count()
+        #this removes email subscription
+        if question.thread.is_followed_by(self):
+            self.unfollow_question(question)
+
     except FavoriteQuestion.DoesNotExist:
         if timestamp is None:
             timestamp = datetime.datetime.now()
@@ -2547,6 +2556,11 @@ def toggle_favorite_question(
             added_at = timestamp,
         )
         fave.save()
+
+        #this removes email subscription
+        if question.thread.is_followed_by(self) is False:
+            self.follow_question(question)
+
         result = True
         question.thread.update_favorite_count()
         award_badges_signal.send(None,

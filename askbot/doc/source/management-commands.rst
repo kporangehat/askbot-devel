@@ -25,6 +25,11 @@ The bulk of the management commands fall into this group and will probably be th
 | `add_admin <user_id>`           | Turn user into an administrator                             |
 |                                 | `<user_id>` is a numeric user id of the account             |
 +---------------------------------+-------------------------------------------------------------+
+| `apply_hinted_tags              | Apply tags to all questions in batch given the list of tags |
+| --tag-names <file>`             | provided with a file. The file must contain tags -          |
+|                                 | one per line. If many tags match - only the most frequent   |
+|                                 | will be selected.                                           |
++---------------------------------+-------------------------------------------------------------+
 | `remove_admin <user_id>`        | Remove admin status from a user account - the opposite of   |
 |                                 | the `add_admin` command                                     |
 +---------------------------------+-------------------------------------------------------------+

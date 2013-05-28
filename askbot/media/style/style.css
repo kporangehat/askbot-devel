@@ -218,6 +218,43 @@ body.user-messages {
   text-align: center;
   margin: 5px 0 8px;
 }
+.hovercard {
+  background: white;
+  border: 3px solid #ddd;
+  -webkit-box-shadow: 0 0 3px #929292;
+  -moz-box-shadow: 0 0 3px #929292;
+  box-shadow: 0 0 3px #929292;
+  font-size: 13px;
+  display: block;
+  max-width: 250px;
+  padding: 10px;
+  position: absolute;
+  border-radius: 5px;
+  -ms-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  z-index: 1001;
+}
+.hovercard p:last-child {
+  margin-bottom: 0;
+}
+.hovercard ul {
+  margin-bottom: 0;
+}
+.hovercard ul li {
+  font-size: 13px;
+  line-height: 16px;
+  margin: 5px 0;
+}
+.hovercard .triangle {
+  border-left: 5px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #ddd;
+  height: 0;
+  margin: -20px 0 10px 0;
+  width: 0;
+}
 #closeNotify {
   position: absolute;
   right: 5px;
@@ -1789,12 +1826,22 @@ ul#related-tags li {
   margin-right: 7px;
 }
 .folded-editor {
+  box-shadow: inset 0 0 3px 1px #aaa;
+  -moz-box-shadow: inset 0 0 3px 1px #aaa;
+  -webkit-box-shadow: inset 0 0 3px 1px #aaa;
+  cursor: text;
   height: 100px;
   outline: none;
   width: 100%;
 }
 .folded-editor .editor-proper {
   display: none;
+}
+.folded-editor.unfolded {
+  cursor: default;
+  box-shadow: 0 0 0 0;
+  -moz-box-shadow: 0 0 0 0;
+  -webkit-box-shadow: 0 0 0 0;
 }
 .folded-editor p.prompt {
   margin: 5px 8px;
@@ -2248,7 +2295,9 @@ ul#related-tags li {
   line-height: 18px;
   margin-top: -2px;
   margin-left: 4px;
-  box-shadow: none;
+  -webkit-box-shadow: 0 0 0 #929292;
+  -moz-box-shadow: 0 0 0 #929292;
+  box-shadow: 0 0 0 #929292;
 }
 .question-page .post-controls .answer-convert input:hover,
 .question-page .answer-controls .answer-convert input:hover {

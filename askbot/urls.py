@@ -534,7 +534,12 @@ urlpatterns = patterns('',
     service_url(
         r'^widgets/questions/(?P<widget_id>\d+)/$',
         views.widgets.question_widget,
-        name = 'question_widget'
+        name='question_widget'
+    ),
+    service_url(
+        r'^get-perms-data/$',
+        views.readers.get_perms_data,
+        name='get_perms_data'
     ),
     service_url(
         r'^start-sharing-twitter/$',

@@ -53,6 +53,10 @@ class ConfigSettings(object):
         """return the defalut value for the setting"""
         return getattr(self.__instance, key).default
 
+    def get_description(self, key):
+        """returns descriptive title of the setting"""
+        return unicode(getattr(self.__instance, key).description)
+
     def reset(self, key):
         """returns setting to the default value"""
         self.update(key, self.get_default(key))
