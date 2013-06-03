@@ -804,7 +804,7 @@ UserGroup.prototype.decorate = function(element){
     this._name = $.trim(element.find('a').html());
     var deleter = new DeleteIcon();
     deleter.setHandler(this.getDeleteHandler());
-    deleter.setContent(gettext('Remove'));
+    //deleter.setContent(gettext('Remove'));
     this._element.find('td:last').append(deleter.getElement());
     this._delete_icon = deleter;
 };
@@ -946,6 +946,7 @@ GroupAdderWidget.prototype.toggleState = function(){
 GroupAdderWidget.prototype.decorate = function(element){
     this._element = element;
     var input = this.makeElement('input');
+    input.attr('type', 'text');
     this._input = input;
 
     var groupsAc = new AutoCompleter({

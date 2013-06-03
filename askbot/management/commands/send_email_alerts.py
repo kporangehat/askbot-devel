@@ -29,7 +29,8 @@ def get_all_origin_posts(mentions):
 def extend_question_list(
                     src, dst, cutoff_time = None, 
                     limit=False, add_mention=False,
-                    add_comment = False
+                    add_comment = False,
+                    languages=None
                 ):
     """src is a query set with questions
     or None
@@ -48,6 +49,8 @@ def extend_question_list(
             raise ValueError('cutoff_time is a mandatory parameter')
 
     for q in src:
+        if languages and src.language_code not in languages:
+            continue
         if q in dst:
             meta_data = dst[q]
         else:
@@ -162,6 +165,11 @@ class Command(NoArgsCommand):
         Q_set_A = not_seen_qs
         Q_set_B = seen_before_last_mod_qs
 
+        if django_settings.ASKBOT_MULTILINGUAL:
+            languages = user.languages.split()
+        else:
+            languages = None
+
         for feed in user_feeds:
             if feed.feed_type == 'm_and_c':
                 #alerts on mentions and comments are processed separately
@@ -216,8 +224,8 @@ class Command(NoArgsCommand):
         q_list = SortedDict()
 
         #todo: refactor q_list into a separate class?
-        extend_question_list(q_sel_A, q_list)
-        extend_question_list(q_sel_B, q_list)
+        extend_question_list(q_sel_A, q_list, languages=languages)
+        extend_question_list(q_sel_B, q_list, languages=languages)
 
         #build list of comment and mention responses here
         #it is separate because posts are not marked as changed
@@ -247,8 +255,9 @@ class Command(NoArgsCommand):
                 extend_question_list(
                                 q_commented,
                                 q_list,
-                                cutoff_time = cutoff_time,
-                                add_comment = True
+                                cutoff_time=cutoff_time,
+                                add_comment=True,
+                                languages=languages
                             )
 
                 mentions = Activity.objects.get_mentions(
@@ -267,27 +276,37 @@ class Command(NoArgsCommand):
 
                 q_mentions_A = Q_set_A.filter(id__in = q_mentions_id)
                 q_mentions_A.cutoff_time = cutoff_time
-                extend_question_list(q_mentions_A, q_list, add_mention=True)
+                extend_question_list(
+                    q_mentions_A,
+                    q_list,
+                    add_mention=True,
+                    languages=languages
+                )
 
                 q_mentions_B = Q_set_B.filter(id__in = q_mentions_id)
                 q_mentions_B.cutoff_time = cutoff_time
-                extend_question_list(q_mentions_B, q_list, add_mention=True)
+                extend_question_list(
+                    q_mentions_B,
+                    q_list,
+                    add_mention=True,
+                    languages=languages
+                )
         except EmailFeedSetting.DoesNotExist:
             pass
 
         if user.email_tag_filter_strategy == const.INCLUDE_INTERESTING:
-            extend_question_list(q_all_A, q_list)
-            extend_question_list(q_all_B, q_list)
+            extend_question_list(q_all_A, q_list, languages=languages)
+            extend_question_list(q_all_B, q_list, languages=languages)
 
-        extend_question_list(q_ask_A, q_list, limit=True)
-        extend_question_list(q_ask_B, q_list, limit=True)
+        extend_question_list(q_ask_A, q_list, limit=True, languages=languages)
+        extend_question_list(q_ask_B, q_list, limit=True, languages=languages)
 
-        extend_question_list(q_ans_A, q_list, limit=True)
-        extend_question_list(q_ans_B, q_list, limit=True)
+        extend_question_list(q_ans_A, q_list, limit=True, languages=languages)
+        extend_question_list(q_ans_B, q_list, limit=True, languages=languages)
 
         if user.email_tag_filter_strategy == const.EXCLUDE_IGNORED:
-            extend_question_list(q_all_A, q_list, limit=True)
-            extend_question_list(q_all_B, q_list, limit=True)
+            extend_question_list(q_all_A, q_list, limit=True, languages=languages)
+            extend_question_list(q_all_B, q_list, limit=True, languages=languages)
 
         ctype = ContentType.objects.get_for_model(Post)
         EMAIL_UPDATE_ACTIVITY = const.TYPE_ACTIVITY_EMAIL_UPDATE_SENT

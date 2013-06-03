@@ -546,7 +546,8 @@ class ThreadRenderCacheUpdateTests(AskbotTestCase):
         })
         self.assertEqual(2, Post.objects.count())
         answer = Post.objects.get_answers()[0]
-        self.assertRedirects(response=response, expected_url=answer.get_absolute_url())
+        expected_url=answer.get_absolute_url()
+        self.assertRedirects(response=response, expected_url=expected_url)
 
         thread = answer.thread
         self.assertEqual(1, thread.answer_count)

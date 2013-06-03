@@ -3133,6 +3133,7 @@ a:hover.medal {
     }
     td {
         padding-right: 10px;
+        vertical-align: top;
     }
 }
 
@@ -4099,6 +4100,9 @@ p.signup_p {
         padding: 0;
         margin-top: -3px;
     }
+    .vote-notification h3 {
+        padding: 10px;
+    }
     ul.tags {
         margin-left: 5px;
     }
@@ -4169,24 +4173,25 @@ body.anon.lang-es {
 }
 
 /* user groups */
-#user-groups ul {
-    margin-bottom: 0px;
-}
-#user-groups .delete-icon {
-    float: none;
-    display: inline;
-    color: #525252;
-    padding: 0 3px 0 3px;
-    background: #ccc;
-    border-radius: 4px;
-    line-height:inherit;
-    -moz-border-radius: 4px;
-    -khtml-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-#user-groups .delete-icon:hover {
-    color: white;
-    background: #b32f2f;
+#user-groups {
+    input[type="text"] {
+        height: 21px;
+        width: 100px;
+    }
+    ul {
+        margin-bottom: 0px;
+    }
+    .delete-icon {
+        background: url(../images/close-small.png) no-repeat;
+        border: none;
+        display: inline-block;
+        height: 14px;
+        margin-top: 4px;
+        width: 14px;
+    }
+    .delete-icon:hover {
+        background: url(../images/close-small-hover.png) no-repeat;
+    }
 }
 
 .question-page .post-update-info a.primary-group-name,
@@ -4228,9 +4233,6 @@ img.group-logo {
     margin-left: 0px;
     .group-name {
         padding-right: 20px;
-    }
-    td {
-        padding-bottom: 5px;
     }
 }
 

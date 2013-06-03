@@ -13,6 +13,7 @@
         </div>
     </div>
     {% set editor_is_folded = (
+            settings.QUESTION_BODY_EDITOR_MODE == 'folded' and
             settings.MIN_QUESTION_BODY_LENGTH == 0 and
             form.text.value()|is_empty_editor_value()
         )

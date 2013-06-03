@@ -1028,18 +1028,23 @@ def edit_group_membership(request):
         action = form.cleaned_data['action']
         #warning: possible race condition
         if action == 'add':
-            group_params = {'name': group_name, 'user': user}
-            group = models.Group.objects.get_or_create(**group_params)
-            request.user.edit_group_membership(user, group, 'add')
-            template = get_template('widgets/group_snippet.html')
-            return {
-                'name': group.name,
-                'description': getattr(group.tag_wiki, 'text', ''),
-                'html': template.render({'group': group})
-            }
+            try:
+                group = models.Group.objects.get(name=group_name)
+                request.user.edit_group_membership(user, group, 'add')
+                template = get_template('widgets/group_snippet.html')
+                return {
+                    'name': group.name,
+                    'description': getattr(group.description, 'text', ''),
+                    'html': template.render({'group': group})
+                }
+            except models.Group.DoesNotExist:
+                raise exceptions.PermissionDenied(
+                    _('Group %(name)s does not exist') % {'name': group_name}
+                )
+                
         elif action == 'remove':
             try:
-                group = models.Group.objects.get(group_name = group_name)
+                group = models.Group.objects.get(name = group_name)
                 request.user.edit_group_membership(user, group, 'remove')
             except models.Group.DoesNotExist:
                 raise exceptions.PermissionDenied()
