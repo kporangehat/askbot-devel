@@ -878,16 +878,12 @@ def finalize_generic_signin(
                                 )
                 logging.info('switching account or open id changed???')
                 #did openid url change? or we are dealing with a brand new open id?
-                message1 = _(
+                message = _(
                     'If you are trying to sign in to another account, '
-                    'please sign out first.'
-                )
-                request.user.message_set.create(message=message1)
-                message2 = _(
-                    'Otherwise, please report the incident '
+                    'please sign out first. Otherwise, please report the incident '
                     'to the site administrator.'
                 )
-                request.user.message_set.create(message=message2)
+                request.user.message_set.create(message=message)
                 return HttpResponseRedirect(redirect_url)
             except UserAssociation.DoesNotExist:
                 #register new association
@@ -1256,6 +1252,7 @@ def send_email_key(email, key, handler_url_name='user_account_recover'):
                 {'site': askbot_settings.APP_SHORT_NAME}
 
     data = {
+        'site_name': askbot_settings.APP_SHORT_NAME,
         'validation_link': site_url(reverse(handler_url_name)) + \
                             '?validation_code=' + key
     }

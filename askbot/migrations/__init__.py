@@ -2,7 +2,7 @@ from south.db import db
 from south.utils import ask_for_it_by_name
 from south.v2 import SchemaMigration
 
-if not db.has_ddl_transactions:
+if db.backend_name == 'mysql' and not db.has_ddl_transactions:
     SchemaMigration.no_dry_run = True
 
 # Terminal ANSI codes for printing colored text:

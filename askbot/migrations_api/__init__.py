@@ -13,7 +13,7 @@ def safe_add_column(table, column, column_data, keep_default = False):
     so, we need to add these columns here in separate transactions
     and roll back if they fail, if we want we could also record - which columns clash
     """
-    if db.backend_name in ('mysql', 'postgres'):
+    if db.backend_name == 'mysql':
         if len(db.execute('select column_name from information_schema.columns where table_name=%s and column_name=%s', params=[table, column])) == 0:
             db.add_column(table, column, column_data, keep_default = keep_default)
     else:
